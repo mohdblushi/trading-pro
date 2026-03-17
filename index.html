@@ -357,9 +357,49 @@
     text-shadow: 0 0 15px rgba(255,170,0,0.4);
   }
 
+  .signal-display.strong-buy {
+    border-color: var(--green);
+    color: var(--green);
+    font-size: 20px;
+    text-shadow: 0 0 30px var(--green), 0 0 60px rgba(0,255,157,0.5);
+    box-shadow: 0 0 50px rgba(0,255,157,0.35), inset 0 0 40px rgba(0,255,157,0.1);
+    animation: strongPulseBuy 0.8s ease-in-out infinite;
+  }
+
+  .signal-display.strong-sell {
+    border-color: var(--red);
+    color: var(--red);
+    font-size: 20px;
+    text-shadow: 0 0 30px var(--red), 0 0 60px rgba(255,60,90,0.5);
+    box-shadow: 0 0 50px rgba(255,60,90,0.35), inset 0 0 40px rgba(255,60,90,0.1);
+    animation: strongPulseSell 0.8s ease-in-out infinite;
+  }
+
   @keyframes signalPulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
+  }
+
+  @keyframes strongPulseBuy {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 50px rgba(0,255,157,0.35), inset 0 0 40px rgba(0,255,157,0.1);
+    }
+    50% {
+      opacity: 0.85;
+      box-shadow: 0 0 80px rgba(0,255,157,0.65), inset 0 0 60px rgba(0,255,157,0.2);
+    }
+  }
+
+  @keyframes strongPulseSell {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 50px rgba(255,60,90,0.35), inset 0 0 40px rgba(255,60,90,0.1);
+    }
+    50% {
+      opacity: 0.85;
+      box-shadow: 0 0 80px rgba(255,60,90,0.65), inset 0 0 60px rgba(255,60,90,0.2);
+    }
   }
 
   .signal-sub {
@@ -742,7 +782,7 @@
       </div>
       <div>
         <div class="brand-name">APEX TRADER</div>
-        <div class="brand-sub">PRECISION SIGNAL ENGINE v3.0</div>
+        <div class="brand-sub">AGGRESSIVE MOMENTUM ENGINE v4.0</div>
       </div>
     </div>
     <div class="header-right">
@@ -774,444 +814,4 @@
     <!-- SIGNAL CARD -->
     <div class="card signal-card">
       <div class="card-label">◈ SIGNAL STATUS</div>
-      <div class="signal-display waiting" id="signalDisplay">INITIALIZING</div>
-      <div class="signal-sub" id="signalSub">Scanning market conditions...</div>
-    </div>
-
-    <!-- VOLATILITY CARD -->
-    <div class="card vol-card">
-      <div class="card-label">◈ VOLATILITY SHIELD</div>
-      <div style="display:flex;align-items:baseline;gap:8px;">
-        <div class="vol-value" id="volValue">0.00%</div>
-        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">24H MOVE</div>
-      </div>
-      <div class="vol-bar-track">
-        <div class="vol-bar-fill" id="volBar" style="width:0%;background:var(--red);"></div>
-      </div>
-      <div class="vol-threshold">THRESHOLD: 0.65% | <span id="volRaw">—</span></div>
-      <div class="vol-status inactive" id="volStatus">
-        <span>●</span> SHIELD ACTIVE — MARKET TOO SLOW
-      </div>
-    </div>
-
-    <!-- CANDLE TREND CARD -->
-    <div class="card candle-card">
-      <div class="card-label">◈ 4-CANDLE TREND CONFIRMATION (1-MIN)</div>
-      <div class="candle-row" id="candleRow">
-        <!-- Populated by JS -->
-      </div>
-      <div class="trend-verdict unconfirmed" id="trendVerdict">
-        <span>◌</span> AWAITING CANDLE DATA — TREND UNCONFIRMED
-      </div>
-    </div>
-
-    <!-- RISK MANAGEMENT CARD -->
-    <div class="card risk-card">
-      <div class="card-label">◈ SMART RISK MANAGEMENT</div>
-      <div class="risk-row">
-        <div class="risk-item entry">
-          <div class="risk-item-label">ENTRY</div>
-          <div class="risk-item-value" id="riskEntry">—</div>
-        </div>
-        <div class="risk-item sl">
-          <div class="risk-item-label">STOP LOSS</div>
-          <div class="risk-item-value" id="riskSL">—</div>
-        </div>
-        <div class="risk-item tp">
-          <div class="risk-item-label">TAKE PROFIT</div>
-          <div class="risk-item-value" id="riskTP">—</div>
-        </div>
-      </div>
-      <div class="rr-badge" id="rrBadge">RISK:REWARD = 1 : 2 | SL DISTANCE: —</div>
-    </div>
-
-  </div>
-
-  <!-- SETTINGS PANEL -->
-  <div class="settings-panel">
-    <div class="settings-title">PRECISION SETTINGS — MT5 SYNC CONTROLS</div>
-    <div class="settings-grid">
-      <div class="setting-item">
-        <label>Price Offset (XAUUSD)</label>
-        <input type="number" id="offsetGold" value="0" step="0.01" placeholder="e.g. +1.25" onchange="applySettings()">
-      </div>
-      <div class="setting-item">
-        <label>Price Offset (BTC)</label>
-        <input type="number" id="offsetBtc" value="0" step="0.1" placeholder="e.g. -5.00" onchange="applySettings()">
-      </div>
-      <div class="setting-item">
-        <label>SL Distance (pips/pts)</label>
-        <input type="number" id="slDistance" value="15" step="1" min="1" placeholder="15" onchange="applySettings()">
-      </div>
-      <div class="setting-item">
-        <label>Volatility Threshold (%)</label>
-        <input type="number" id="volThreshold" value="0.65" step="0.01" min="0.1" placeholder="0.65" onchange="applySettings()">
-      </div>
-    </div>
-  </div>
-
-  <!-- TRADINGVIEW CHART -->
-  <div class="chart-section">
-    <div class="chart-header">
-      <div class="chart-title">
-        ◈ TRADINGVIEW LIVE CHART
-        <div class="chart-symbol-badge" id="chartSymbolBadge">XAUUSD</div>
-      </div>
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">TIMEFRAME: 1MIN | DARK MODE</div>
-    </div>
-    <div id="tv-chart-container"></div>
-  </div>
-
-  <!-- STATUS BAR -->
-  <div class="status-bar">
-    <div class="status-items">
-      <div class="status-item">ENGINE: <span id="engineStatus">ACTIVE</span></div>
-      <div class="status-item">UPDATE CYCLE: <span>2s</span></div>
-      <div class="status-item">CANDLES: <span id="candleCount">4/4 REQUIRED</span></div>
-      <div class="status-item">LAST TICK: <span id="lastTick">—</span></div>
-    </div>
-    <div style="color:var(--text-muted);letter-spacing:1px;">APEX TRADER © 2025 — FOR EDUCATIONAL USE</div>
-  </div>
-
-</div>
-
-<!-- TradingView Widget Script -->
-<script src="https://s3.tradingview.com/tv.js"></script>
-
-<script>
-// ╔══════════════════════════════════════════════════════╗
-// ║          APEX TRADER — CORE ENGINE v3.0             ║
-// ╚══════════════════════════════════════════════════════╝
-
-// ── STATE ──
-let currentAsset = 'GOLD';
-let tvWidget = null;
-let updateInterval = null;
-let priceHistory = { GOLD: [], BTC: [] };
-let candles = { GOLD: [], BTC: [] };
-let lastPrice = { GOLD: 0, BTC: 0 };
-let price24hAgo = { GOLD: 0, BTC: 0 };
-
-// ── SETTINGS (runtime) ──
-let settings = {
-  offsetGold: 0,
-  offsetBtc: 0,
-  slDistance: 15,
-  volThreshold: 0.65
-};
-
-// ── SYMBOLS ──
-const SYMBOLS = {
-  GOLD: { binance: 'XAUUSDT', tv: 'OANDA:XAUUSD', label: 'XAUUSD', decimals: 2, pip: 0.1 },
-  BTC:  { binance: 'BTCUSDT', tv: 'BINANCE:BTCUSDT', label: 'BTCUSDT', decimals: 1, pip: 1 }
-};
-
-// ── CLOCK ──
-function updateClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    now.toUTCString().split(' ')[4] + ' UTC';
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// ── APPLY SETTINGS ──
-function applySettings() {
-  settings.offsetGold   = parseFloat(document.getElementById('offsetGold').value)   || 0;
-  settings.offsetBtc    = parseFloat(document.getElementById('offsetBtc').value)    || 0;
-  settings.slDistance   = parseFloat(document.getElementById('slDistance').value)   || 15;
-  settings.volThreshold = parseFloat(document.getElementById('volThreshold').value) || 0.65;
-}
-
-// ── TRADINGVIEW WIDGET ──
-function loadTVChart(asset) {
-  const sym = SYMBOLS[asset];
-  document.getElementById('chartSymbolBadge').textContent = sym.label;
-  document.getElementById('tv-chart-container').innerHTML = '';
-
-  new TradingView.widget({
-    container_id: 'tv-chart-container',
-    symbol: sym.tv,
-    interval: '1',
-    timezone: 'Etc/UTC',
-    theme: 'dark',
-    style: '1',
-    locale: 'en',
-    toolbar_bg: '#060d14',
-    enable_publishing: false,
-    hide_top_toolbar: false,
-    hide_legend: false,
-    save_image: false,
-    backgroundColor: '#060d14',
-    gridColor: 'rgba(0,200,255,0.04)',
-    overrides: {
-      'paneProperties.background': '#060d14',
-      'paneProperties.backgroundType': 'solid',
-      'scalesProperties.textColor': 'rgba(232,244,255,0.5)',
-      'mainSeriesProperties.candleStyle.upColor': '#00ff9d',
-      'mainSeriesProperties.candleStyle.downColor': '#ff3c5a',
-      'mainSeriesProperties.candleStyle.borderUpColor': '#00ff9d',
-      'mainSeriesProperties.candleStyle.borderDownColor': '#ff3c5a',
-      'mainSeriesProperties.candleStyle.wickUpColor': '#00ff9d',
-      'mainSeriesProperties.candleStyle.wickDownColor': '#ff3c5a',
-    },
-    width: '100%',
-    height: 480,
-    withdateranges: false,
-    allow_symbol_change: true,
-    details: false,
-    hotlist: false,
-    calendar: false,
-  });
-}
-
-// ── ASSET SWITCH ──
-function setAsset(asset) {
-  currentAsset = asset;
-  document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.asset-btn.${asset === 'GOLD' ? 'gold' : 'btc'}`).classList.add('active');
-  loadTVChart(asset);
-  resetSignalUI();
-  fetchData();
-}
-
-function resetSignalUI() {
-  setSignal('waiting', 'WAITING', 'Scanning market conditions...');
-  document.getElementById('riskEntry').textContent = '—';
-  document.getElementById('riskSL').textContent = '—';
-  document.getElementById('riskTP').textContent = '—';
-  document.getElementById('rrBadge').textContent = 'RISK:REWARD = 1 : 2 | SL DISTANCE: —';
-}
-
-// ── FETCH PRICE DATA ──
-async function fetchData() {
-  const sym = SYMBOLS[currentAsset];
-  try {
-    // Current price (24h ticker)
-    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym.binance}`);
-    const ticker = await res.json();
-
-    const rawPrice = parseFloat(ticker.lastPrice);
-    const offset = currentAsset === 'GOLD' ? settings.offsetGold : settings.offsetBtc;
-    const price = rawPrice + offset;
-
-    const change24h = parseFloat(ticker.priceChangePercent);
-    const high24h = parseFloat(ticker.highPrice) + offset;
-    const low24h  = parseFloat(ticker.lowPrice)  + offset;
-    const prevClose = parseFloat(ticker.prevClosePrice) + offset;
-
-    updatePriceUI(price, change24h, high24h, low24h, offset, sym);
-    updateVolatilityUI(Math.abs(change24h));
-
-    // 1-min candles
-    const candleRes = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${sym.binance}&interval=1m&limit=6`
-    );
-    const klines = await candleRes.json();
-
-    // Build last 4 closed candles (index 0-3, skip most recent open)
-    const closed = klines.slice(0, 5).map(k => ({
-      open:  parseFloat(k[1]) + offset,
-      high:  parseFloat(k[2]) + offset,
-      low:   parseFloat(k[3]) + offset,
-      close: parseFloat(k[4]) + offset,
-      green: parseFloat(k[4]) > parseFloat(k[1]),
-      red:   parseFloat(k[4]) < parseFloat(k[1]),
-    })).reverse(); // newest last
-
-    const last4 = closed.slice(closed.length - 4);
-    updateCandleUI(last4, sym);
-    evaluateSignal(price, change24h, last4, sym);
-
-    document.getElementById('lastTick').textContent = new Date().toLocaleTimeString('en-GB');
-
-  } catch (e) {
-    console.warn('Fetch error:', e);
-    document.getElementById('engineStatus').textContent = 'RETRY...';
-    setTimeout(() => document.getElementById('engineStatus').textContent = 'ACTIVE', 2000);
-  }
-}
-
-// ── UPDATE PRICE UI ──
-function updatePriceUI(price, change24h, high, low, offset, sym) {
-  const el = document.getElementById('priceDisplay');
-  const oldPrice = parseFloat(el.dataset.price || 0);
-  el.dataset.price = price;
-
-  const direction = price > oldPrice ? 'up' : price < oldPrice ? 'down' : 'neutral';
-  el.className = `price-display ${direction}`;
-  el.textContent = price.toFixed(sym.decimals);
-  el.classList.add('flash');
-  setTimeout(() => el.classList.remove('flash'), 300);
-
-  const pctEl = document.getElementById('changePct');
-  pctEl.textContent = `${change24h >= 0 ? '+' : ''}${change24h.toFixed(2)}%`;
-  pctEl.className = `change-pct ${change24h >= 0 ? 'up' : 'down'}`;
-
-  document.getElementById('spreadInfo').textContent =
-    `OFFSET: ${offset >= 0 ? '+' : ''}${offset.toFixed(2)} | HIGH: ${high.toFixed(sym.decimals)} | LOW: ${low.toFixed(sym.decimals)}`;
-}
-
-// ── UPDATE VOLATILITY UI ──
-function updateVolatilityUI(absChange) {
-  const threshold = settings.volThreshold;
-  const pct = Math.min((absChange / (threshold * 3)) * 100, 100);
-  const isActive = absChange >= threshold;
-
-  document.getElementById('volValue').textContent = `${absChange.toFixed(2)}%`;
-  document.getElementById('volValue').style.color = isActive ? 'var(--green)' : 'var(--amber)';
-  document.getElementById('volRaw').textContent = `${absChange.toFixed(3)}% RAW`;
-
-  const bar = document.getElementById('volBar');
-  bar.style.width = `${pct}%`;
-  bar.style.background = isActive
-    ? 'linear-gradient(90deg, var(--green), rgba(0,255,157,0.6))'
-    : 'linear-gradient(90deg, var(--amber), rgba(255,170,0,0.6))';
-
-  const statusEl = document.getElementById('volStatus');
-  if (isActive) {
-    statusEl.className = 'vol-status active';
-    statusEl.innerHTML = '<span>●</span> SHIELD CLEAR — VOLATILITY SUFFICIENT';
-  } else {
-    statusEl.className = 'vol-status inactive';
-    statusEl.innerHTML = '<span>●</span> SHIELD ACTIVE — MARKET TOO SLOW';
-  }
-  document.getElementById('volThreshold').textContent = `THRESHOLD: ${threshold}% | ${document.getElementById('volRaw').textContent}`;
-}
-
-// ── UPDATE CANDLE UI ──
-function updateCandleUI(last4, sym) {
-  const row = document.getElementById('candleRow');
-  row.innerHTML = '';
-
-  last4.forEach((c, i) => {
-    const dir = c.green ? 'green' : c.red ? 'red' : 'neutral';
-    const arrow = c.green ? '▲' : c.red ? '▼' : '—';
-    const age = last4.length - i;
-
-    row.innerHTML += `
-      <div class="candle-item">
-        <div class="candle-label-sm">C-${age} ${age === 1 ? '(LATEST)' : ''}</div>
-        <div class="candle-visual ${dir}">
-          <div class="candle-arrow">${arrow}</div>
-          <div class="candle-close-val">${c.close.toFixed(sym.decimals)}</div>
-        </div>
-        <div class="candle-ohlc" style="color:${c.green ? 'var(--green)' : c.red ? 'var(--red)' : 'var(--text-muted)'}">
-          ${dir.toUpperCase()}
-        </div>
-      </div>
-    `;
-  });
-}
-
-// ── EVALUATE SIGNAL — STRICT LOGIC ──
-function evaluateSignal(price, change24h, last4, sym) {
-  const absChange = Math.abs(change24h);
-  const threshold = settings.volThreshold;
-
-  // FILTER 1: VOLATILITY SHIELD
-  if (absChange < threshold) {
-    setSignal('sideways', 'WAIT — SIDEWAYS MARKET', `24H change ${absChange.toFixed(2)}% < ${threshold}% threshold`);
-    setTrendVerdict('unconfirmed', '◌ VOLATILITY TOO LOW — SIDEWAYS MARKET DETECTED');
-    clearRisk();
-    return;
-  }
-
-  if (last4.length < 4) {
-    setSignal('waiting', 'WAITING', 'Insufficient candle data...');
-    return;
-  }
-
-  // FILTER 2: 4-CANDLE STRICT TREND CONFIRMATION
-  const allGreen = last4.every(c => c.green);
-  const allRed   = last4.every(c => c.red);
-
-  // Each candle must close HIGHER than the previous (ascending closes)
-  const ascendingCloses = last4.every((c, i) =>
-    i === 0 || c.close > last4[i - 1].close
-  );
-  // Each candle must close LOWER than the previous (descending closes)
-  const descendingCloses = last4.every((c, i) =>
-    i === 0 || c.close < last4[i - 1].close
-  );
-
-  const bullConfirmed = allGreen && ascendingCloses;
-  const bearConfirmed = allRed   && descendingCloses;
-
-  if (bullConfirmed) {
-    setTrendVerdict('confirmed-bull', '▲ BULLISH TREND CONFIRMED — 4/4 CANDLES GREEN + ASCENDING CLOSES');
-    setSignal('buy', '▲ ENTRY NOW — BUY', '4-candle bull confirmed | Volatility clear');
-    updateRisk(price, 'buy', sym);
-  } else if (bearConfirmed) {
-    setTrendVerdict('confirmed-bear', '▼ BEARISH TREND CONFIRMED — 4/4 CANDLES RED + DESCENDING CLOSES');
-    setSignal('sell', '▼ ENTRY NOW — SELL', '4-candle bear confirmed | Volatility clear');
-    updateRisk(price, 'sell', sym);
-  } else {
-    // Determine what broke
-    const greenCount = last4.filter(c => c.green).length;
-    const redCount   = last4.filter(c => c.red).length;
-    let reason = 'Mixed candles detected';
-    if (allGreen && !ascendingCloses) reason = 'Green candles but closes NOT ascending';
-    else if (allRed && !descendingCloses) reason = 'Red candles but closes NOT descending';
-    else reason = `Pattern: ${greenCount}G ${redCount}R — Waiting for clean trend`;
-
-    setTrendVerdict('unconfirmed', `◌ TREND UNCONFIRMED — ${reason.toUpperCase()}`);
-    setSignal('waiting', 'WAITING', reason);
-    clearRisk();
-  }
-}
-
-// ── SIGNAL UI ──
-function setSignal(type, text, sub) {
-  const el = document.getElementById('signalDisplay');
-  el.className = `signal-display ${type}`;
-  el.textContent = text;
-  document.getElementById('signalSub').textContent = sub;
-}
-
-function setTrendVerdict(cls, text) {
-  const el = document.getElementById('trendVerdict');
-  el.className = `trend-verdict ${cls}`;
-  el.innerHTML = text;
-}
-
-// ── RISK MANAGEMENT ──
-function updateRisk(price, direction, sym) {
-  const slDist = settings.slDistance * sym.pip;
-  const tpDist = slDist * 2; // 1:2 RR
-
-  let sl, tp;
-  if (direction === 'buy') {
-    sl = price - slDist;
-    tp = price + tpDist;
-  } else {
-    sl = price + slDist;
-    tp = price - tpDist;
-  }
-
-  document.getElementById('riskEntry').textContent = price.toFixed(sym.decimals);
-  document.getElementById('riskSL').textContent    = sl.toFixed(sym.decimals);
-  document.getElementById('riskTP').textContent    = tp.toFixed(sym.decimals);
-  document.getElementById('rrBadge').textContent   =
-    `RISK:REWARD = 1 : 2 | SL DISTANCE: ${slDist.toFixed(sym.decimals)} | TP DISTANCE: ${tpDist.toFixed(sym.decimals)}`;
-}
-
-function clearRisk() {
-  document.getElementById('riskEntry').textContent = '—';
-  document.getElementById('riskSL').textContent    = '—';
-  document.getElementById('riskTP').textContent    = '—';
-  document.getElementById('rrBadge').textContent   = 'RISK:REWARD = 1 : 2 | SL DISTANCE: —';
-}
-
-// ── BOOT ──
-function init() {
-  applySettings();
-  loadTVChart('GOLD');
-  fetchData();
-  updateInterval = setInterval(fetchData, 2000);
-}
-
-init();
-</script>
-</body>
-</html>
+      <div class="signal-
