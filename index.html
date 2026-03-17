@@ -3,51 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V60 - Final Decision</title>
+    <title>Elite Pro V70 - Anti-Fake</title>
     <style>
-        :root { --bg: #000; --card: #0c0c0c; --up: #00ff88; --down: #ff3b3b; --wait: #444; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        .main-container { max-width: 400px; margin: auto; background: var(--card); border: 2px solid #222; border-radius: 30px; padding: 30px; text-align: center; }
-        .price { font-size: 60px; font-weight: 900; margin-bottom: 20px; color: #fff; }
-        
-        /* Decision Box */
-        .decision-box { padding: 25px; border-radius: 20px; font-size: 28px; font-weight: 900; margin-bottom: 20px; transition: 0.5s; }
-        .buy { background: rgba(0, 255, 136, 0.15); color: var(--up); border: 2px solid var(--up); }
-        .sell { background: rgba(255, 59, 59, 0.15); color: var(--down); border: 2px solid var(--down); }
-        .neutral { background: #1a1a1a; color: var(--wait); border: 2px solid #333; }
-
-        .info-text { font-size: 14px; color: #888; margin-bottom: 25px; line-height: 1.5; }
-        .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .lvl { background: #151515; padding: 15px; border-radius: 15px; border: 1px solid #222; }
-        .label { font-size: 11px; color: #555; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-        .val { font-size: 18px; font-weight: 700; }
-        
-        .mode-switch { display: flex; gap: 10px; margin-bottom: 20px; }
-        .m-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #333; background: #111; color: #666; font-weight: bold; cursor: pointer; }
-        .m-btn.active { border-color: #ffcc00; color: #ffcc00; }
+        :root { --bg: #000; --card: #0d0d0d; --up: #00ff88; --down: #ff3b3b; --text: #888; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; }
+        .terminal { max-width: 420px; margin: auto; background: var(--card); border: 1px solid #222; border-radius: 25px; padding: 25px; }
+        .price { font-size: 55px; font-weight: 800; text-align: center; margin: 10px 0; }
+        .status-box { padding: 20px; border-radius: 15px; text-align: center; font-size: 24px; font-weight: 900; margin: 15px 0; border: 2px solid #222; }
+        .buy { border-color: var(--up); color: var(--up); background: rgba(0,255,136,0.05); }
+        .sell { border-color: var(--down); color: var(--down); background: rgba(255,59,59,0.05); }
+        .wait { border-color: #333; color: #555; }
+        .adv-text { font-size: 13px; color: var(--text); text-align: center; margin-bottom: 20px; line-height: 1.4; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item { background: #151515; padding: 12px; border-radius: 12px; border: 1px solid #222; }
+        .label { font-size: 10px; color: #555; font-weight: bold; margin-bottom: 4px; }
+        .val { font-size: 16px; font-weight: bold; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #666; cursor: pointer; font-weight: bold; }
+        .tab.active { border-color: #ffcc00; color: #ffcc00; }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="mode-switch">
-            <button id="g-btn" class="m-btn active" onclick="setMode('GOLD')">GOLD</button>
-            <button id="b-btn" class="m-btn" onclick="setMode('BTC')">BITCOIN</button>
+    <div class="terminal">
+        <div class="tabs">
+            <button id="g-btn" class="tab active" onclick="setMode('GOLD')">GOLD</button>
+            <button id="b-btn" class="tab" onclick="setMode('BTC')">BTC</button>
         </div>
-        <div id="price" class="price">0.00</div>
-        
-        <div id="decision" class="decision-box neutral">AI ANALYZING...</div>
-        
-        <div id="hint" class="info-text">Market is sideways. <br> Do not take any trade right now.</div>
-
-        <div class="levels">
-            <div class="lvl"><div class="label" style="color:var(--down)">STOP LOSS</div><div id="sl" class="val">--</div></div>
-            <div class="lvl"><div class="label" style="color:var(--up)">PROFIT TARGET</div><div id="tp" class="val">--</div></div>
+        <div id="price" class="price">--</div>
+        <div id="status" class="status-box wait">FILTERING...</div>
+        <div id="adv" class="adv-text">Analyzing market patterns to avoid fake entries. Please stay patient.</div>
+        <div class="grid">
+            <div class="item"><div class="label" style="color:var(--down)">STOP LOSS</div><div id="sl" class="val">--</div></div>
+            <div class="item"><div class="label" style="color:var(--up)">TAKE PROFIT</div><div id="tp" class="val">--</div></div>
         </div>
     </div>
 
     <script>
         let mode = 'GOLD';
-        function setMode(m){ mode=m; document.getElementById('g-btn').className = m==='GOLD'?'m-btn active':'m-btn'; document.getElementById('b-btn').className = m==='BTC'?'m-btn active':'m-btn'; update(); }
+        let history = [];
+
+        function setMode(m){ mode=m; document.getElementById('g-btn').className = m==='GOLD'?'tab active':'tab'; document.getElementById('b-btn').className = m==='BTC'?'tab active':'tab'; update(); }
 
         async function update(){
             try {
@@ -59,31 +54,36 @@
 
                 document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2});
                 
-                const dec = document.getElementById('decision');
-                const hint = document.getElementById('hint');
+                history.push(p); if(history.length > 5) history.shift();
                 
-                // --- HARD FILTER LOGIC (0.50% Trend Confirmation) ---
-                if(chg > 0.50) {
-                    dec.innerHTML = "✅ PERFECT BUY"; dec.className = "decision-box buy";
-                    hint.innerHTML = "Trend is Strong Up. <br> Safe to Enter Buy Position Now.";
-                    document.getElementById('sl').innerText = (p - (mode==='GOLD' ? 5 : 450)).toFixed(2);
-                    document.getElementById('tp').innerText = (p + (mode==='GOLD' ? 10 : 900)).toFixed(2);
+                // --- ANTI-FAKE LOGIC ---
+                let isRising = history.every((val, i, arr) => i === 0 || val >= arr[i-1]);
+                let isFalling = history.every((val, i, arr) => i === 0 || val <= arr[i-1]);
+
+                const stat = document.getElementById('status');
+                const adv = document.getElementById('adv');
+
+                if(chg > 0.55 && isRising) {
+                    stat.innerText = "CONFIRMED BUY"; stat.className = "status-box buy";
+                    adv.innerText = "Trend is verified. Safe to enter Buy position.";
+                    document.getElementById('sl').innerText = (p - (mode==='GOLD' ? 6 : 500)).toFixed(2);
+                    document.getElementById('tp').innerText = (p + (mode==='GOLD' ? 12 : 1000)).toFixed(2);
                 } 
-                else if(chg < -0.50) {
-                    dec.innerHTML = "🚨 PERFECT SELL"; dec.className = "decision-box sell";
-                    hint.innerHTML = "Trend is Strong Down. <br> Safe to Enter Sell Position Now.";
-                    document.getElementById('sl').innerText = (p + (mode==='GOLD' ? 5 : 450)).toFixed(2);
-                    document.getElementById('tp').innerText = (p - (mode==='GOLD' ? 10 : 900)).toFixed(2);
+                else if(chg < -0.55 && isFalling) {
+                    stat.innerText = "CONFIRMED SELL"; stat.className = "status-box sell";
+                    adv.innerText = "Down trend is verified. Safe to enter Sell position.";
+                    document.getElementById('sl').innerText = (p + (mode==='GOLD' ? 6 : 500)).toFixed(2);
+                    document.getElementById('tp').innerText = (p - (mode==='GOLD' ? 12 : 1000)).toFixed(2);
                 } 
                 else {
-                    dec.innerHTML = "⏳ NO TRADE"; dec.className = "decision-box neutral";
-                    hint.innerHTML = "Market is not clear. <br> Please wait for a bigger move.";
+                    stat.innerText = "❌ NO ENTRY"; stat.className = "status-box wait";
+                    adv.innerText = "Market is giving fake signals or moving sideways. DO NOT TRADE.";
                     document.getElementById('sl').innerText = "--";
                     document.getElementById('tp').innerText = "--";
                 }
             } catch(e) {}
         }
-        setInterval(update, 5000); update();
+        setInterval(update, 4000); update();
     </script>
 </body>
 </html>
