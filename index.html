@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APEX TRADER — XAUUSD / BTCUSDT</title>
+<title>APEX TRADER — XAUUSD / BTCUSDT | 5M SCALPER</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -858,7 +858,7 @@
       </div>
       <div>
         <div class="brand-name">APEX TRADER</div>
-        <div class="brand-sub">AGGRESSIVE MOMENTUM ENGINE v4.0</div>
+        <div class="brand-sub">5M SCALPER ENGINE v5.0 — FAST SIGNALS</div>
       </div>
     </div>
     <div class="header-right">
@@ -912,7 +912,7 @@
 
     <!-- CANDLE TREND CARD -->
     <div class="card candle-card">
-      <div class="card-label">◈ AGGRESSIVE MOMENTUM (2-3 CANDLE CONFIRMATION)</div>
+      <div class="card-label">◈ 5M SCALPER — FAST MOMENTUM (2 CANDLE)</div>
       <div class="candle-row" id="candleRow">
         <!-- Populated by JS -->
       </div>
@@ -973,7 +973,7 @@
         ◈ TRADINGVIEW LIVE CHART
         <div class="chart-symbol-badge" id="chartSymbolBadge">XAUUSD</div>
       </div>
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">TIMEFRAME: 1MIN | DARK MODE</div>
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);">TIMEFRAME: 5MIN | DARK MODE</div>
     </div>
     <div id="tv-chart-container"></div>
   </div>
@@ -982,8 +982,9 @@
   <div class="status-bar">
     <div class="status-items">
       <div class="status-item">ENGINE: <span id="engineStatus">ACTIVE</span></div>
-      <div class="status-item">UPDATE CYCLE: <span>2s</span></div>
-      <div class="status-item">CANDLES: <span id="candleCount">2-3 REQUIRED</span></div>
+      <div class="status-item">PRICE: <span>1s LIVE</span></div>
+      <div class="status-item">SIGNAL: <span>10s CYCLE</span></div>
+      <div class="status-item">CANDLES: <span id="candleCount">5M SCALP</span></div>
       <div class="status-item">LAST TICK: <span id="lastTick">—</span></div>
     </div>
     <div style="color:var(--text-muted);letter-spacing:1px;">APEX TRADER © 2025 — FOR EDUCATIONAL USE</div>
@@ -1002,7 +1003,6 @@
 // ── STATE ──
 let currentAsset = 'GOLD';
 let tvWidget = null;
-let updateInterval = null;
 let priceHistory = { GOLD: [], BTC: [] };
 let candles = { GOLD: [], BTC: [] };
 let lastPrice = { GOLD: 0, BTC: 0 };
@@ -1048,7 +1048,7 @@ function loadTVChart(asset) {
   new TradingView.widget({
     container_id: 'tv-chart-container',
     symbol: sym.tv,
-    interval: '1',
+    interval: '5',
     timezone: 'Etc/UTC',
     theme: 'dark',
     style: '1',
@@ -1100,33 +1100,35 @@ function resetSignalUI() {
   lastSignalType = null;
 }
 
-// ── FETCH PRICE DATA ──
-async function fetchData() {
+// ── FETCH LIVE PRICE ONLY (runs every 1 second) ──
+async function fetchLivePrice() {
   const sym = SYMBOLS[currentAsset];
   try {
-    // Current price (24h ticker)
     const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym.binance}`);
     const ticker = await res.json();
-
-    const rawPrice = parseFloat(ticker.lastPrice);
     const offset = currentAsset === 'GOLD' ? settings.offsetGold : settings.offsetBtc;
-    const price = rawPrice + offset;
-
+    const price = parseFloat(ticker.lastPrice) + offset;
     const change24h = parseFloat(ticker.priceChangePercent);
     const high24h = parseFloat(ticker.highPrice) + offset;
     const low24h  = parseFloat(ticker.lowPrice)  + offset;
-    const prevClose = parseFloat(ticker.prevClosePrice) + offset;
-
     updatePriceUI(price, change24h, high24h, low24h, offset, sym);
     updateVolatilityUI(Math.abs(change24h));
+    document.getElementById('lastTick').textContent = new Date().toLocaleTimeString('en-GB');
+  } catch(e) { /* silent fail on price tick */ }
+}
 
-    // 1-min candles
+// ── FETCH 5M CANDLES + EVALUATE SIGNAL (runs every 10 seconds) ──
+async function fetchCandles() {
+  const sym = SYMBOLS[currentAsset];
+  try {
+    const offset = currentAsset === 'GOLD' ? settings.offsetGold : settings.offsetBtc;
+
+    // Fetch last 5 closed 5-minute candles (limit=6, skip the open one)
     const candleRes = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${sym.binance}&interval=1m&limit=6`
+      `https://api.binance.com/api/v3/klines?symbol=${sym.binance}&interval=5m&limit=6`
     );
     const klines = await candleRes.json();
 
-    // Build last 4 closed candles (index 0-3, skip most recent open)
     const closed = klines.slice(0, 5).map(k => ({
       open:  parseFloat(k[1]) + offset,
       high:  parseFloat(k[2]) + offset,
@@ -1138,15 +1140,25 @@ async function fetchData() {
 
     const last4 = closed.slice(closed.length - 4);
     updateCandleUI(last4, sym);
-    evaluateSignal(price, change24h, last4, sym);
 
-    document.getElementById('lastTick').textContent = new Date().toLocaleTimeString('en-GB');
+    // Get current price from price display for signal
+    const currentPrice = parseFloat(document.getElementById('priceDisplay').dataset.price || 0);
+    const changePctText = document.getElementById('changePct').textContent;
+    const change24h = parseFloat(changePctText.replace('%','').replace('+','')) || 0;
 
+    evaluateSignal(currentPrice, change24h, last4, sym);
+    document.getElementById('engineStatus').textContent = 'ACTIVE';
   } catch (e) {
-    console.warn('Fetch error:', e);
+    console.warn('Candle fetch error:', e);
     document.getElementById('engineStatus').textContent = 'RETRY...';
-    setTimeout(() => document.getElementById('engineStatus').textContent = 'ACTIVE', 2000);
+    setTimeout(() => document.getElementById('engineStatus').textContent = 'ACTIVE', 3000);
   }
+}
+
+// ── COMBINED FETCH (used on asset switch / first load) ──
+async function fetchData() {
+  await fetchLivePrice();
+  await fetchCandles();
 }
 
 // ── UPDATE PRICE UI ──
@@ -1223,7 +1235,7 @@ function updateCandleUI(last4, sym) {
 
 // ── AUDIO ALERT SYSTEM ──
 let audioCtx = null;
-let lastSignalType = null; // track last signal to fire beep only once
+let lastSignalType = null;
 
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1233,81 +1245,86 @@ function getAudioCtx() {
 function playBeep(type) {
   try {
     const ctx = getAudioCtx();
-    const oscillator = ctx.createOscillator();
-    const gainNode = ctx.createGain();
-    oscillator.connect(gainNode);
-    gainNode.connect(ctx.destination);
 
-    if (type === 'buy') {
-      oscillator.frequency.setValueAtTime(880, ctx.currentTime);        // High A5
-      oscillator.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
-    } else if (type === 'sell') {
-      oscillator.frequency.setValueAtTime(320, ctx.currentTime);        // Low E4
-      oscillator.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.15);
-    }
+    // Play 2 quick beeps for urgency
+    [0, 0.25].forEach(delay => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
 
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.4);
+      if (type === 'buy') {
+        osc.frequency.setValueAtTime(880, ctx.currentTime + delay);
+        osc.frequency.exponentialRampToValueAtTime(1400, ctx.currentTime + delay + 0.15);
+      } else {
+        osc.frequency.setValueAtTime(400, ctx.currentTime + delay);
+        osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + delay + 0.15);
+      }
+
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.5, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.3);
+      osc.start(ctx.currentTime + delay);
+      osc.stop(ctx.currentTime + delay + 0.3);
+    });
   } catch (e) {
     console.warn('Audio beep failed:', e);
   }
 }
 
-// ── EVALUATE SIGNAL — AGGRESSIVE MOMENTUM LOGIC ──
+// ── EVALUATE SIGNAL — 5M FAST SCALPER ──
 function evaluateSignal(price, change24h, last4, sym) {
   const absChange = Math.abs(change24h);
 
-  // VOLATILITY FILTER: < 0.30% → Sideways
-  if (absChange < 0.30) {
-    if (lastSignalType !== 'sideways') lastSignalType = 'sideways';
-    setSignal('sideways', 'SIDEWAYS — NO TRADE', `24H change ${absChange.toFixed(2)}% < 0.30% — Market flat`);
-    setTrendVerdict('unconfirmed', '◌ LOW VOLATILITY — SIDEWAYS MARKET DETECTED');
+  // SIDEWAYS: < 0.20% (looser for 5m — crypto moves more on 5m)
+  if (absChange < 0.20) {
+    setSignal('sideways', 'SIDEWAYS — NO TRADE', `24H: ${absChange.toFixed(2)}% < 0.20% — Stay out`);
+    setTrendVerdict('unconfirmed', '◌ LOW VOLATILITY — SIDEWAYS MARKET');
     clearRisk();
+    if (lastSignalType !== 'sideways') lastSignalType = 'sideways';
     return;
   }
 
-  // Determine mode: Scalping (≥0.80%) or Normal (0.30–0.80%)
-  const scalpingMode = absChange >= 0.80;
-  const candlesNeeded = scalpingMode ? 2 : 3;
-  document.getElementById('candleCount').textContent = scalpingMode ? '2/2 SCALP MODE' : '3/3 NORMAL';
+  // ALWAYS use 2 candles on 5m for speed
+  const candlesNeeded = 2;
+  const scalpingMode  = absChange >= 0.50; // ≥0.50% = HOT SCALP mode on 5m
+  document.getElementById('candleCount').textContent = scalpingMode ? '⚡ HOT SCALP 5M' : '5M SCALP';
 
   if (last4.length < candlesNeeded) {
     setSignal('waiting', 'WAITING', 'Insufficient candle data...');
     return;
   }
 
-  // Use last N candles (newest last)
-  const candles = last4.slice(last4.length - candlesNeeded);
-  const latest   = candles[candles.length - 1];
-  const previous = candles[candles.length - 2];
+  const latest   = last4[last4.length - 1];
+  const previous = last4[last4.length - 2];
 
-  // STRONG BUY: All candles green + latest close > previous close
-  const allGreen       = candles.every(c => c.green);
-  const closingHigher  = latest.close > previous.close;
+  // FAST SIGNAL: just 2 candles
+  const strongBuy  = latest.green && previous.green && latest.close > previous.close;
+  const strongSell = latest.red   && previous.red   && latest.close < previous.close;
 
-  // STRONG SELL: All candles red + latest close < previous close
-  const allRed         = candles.every(c => c.red);
-  const closingLower   = latest.close < previous.close;
+  // EXTRA: single candle override in HOT SCALP — big candle alone triggers
+  const bigGreenCandle = scalpingMode && latest.green &&
+    (latest.close - latest.open) > (previous.close - previous.open) * 1.5;
+  const bigRedCandle   = scalpingMode && latest.red   &&
+    (latest.open - latest.close) > (previous.open - previous.close) * 1.5;
 
-  const strongBuy  = allGreen && closingHigher;
-  const strongSell = allRed   && closingLower;
+  const modeTag = scalpingMode
+    ? `⚡ HOT SCALP 5M | vol ${absChange.toFixed(2)}%`
+    : `5M scalp | vol ${absChange.toFixed(2)}%`;
 
-  const modeTag = scalpingMode ? `⚡ SCALP MODE | 2-candle | vol ${absChange.toFixed(2)}%` : `${candlesNeeded}-candle confirm | vol ${absChange.toFixed(2)}%`;
-
-  if (strongBuy) {
-    setTrendVerdict('confirmed-bull', `▲ BULLISH CONFIRMED — ${candlesNeeded}/${candlesNeeded} GREEN + ASCENDING CLOSES`);
-    setSignal('strong-buy', '🔥 STRONG BUY', modeTag);
+  if (strongBuy || bigGreenCandle) {
+    const label = bigGreenCandle && !strongBuy ? '⚡ SCALP BUY' : '🔥 STRONG BUY';
+    setTrendVerdict('confirmed-bull', '▲ BULL MOMENTUM — 5M GREEN CONFIRMED');
+    setSignal('strong-buy', label, modeTag);
     updateRisk(price, 'buy', sym);
     if (lastSignalType !== 'strong-buy') {
       lastSignalType = 'strong-buy';
       playBeep('buy');
     }
-  } else if (strongSell) {
-    setTrendVerdict('confirmed-bear', `▼ BEARISH CONFIRMED — ${candlesNeeded}/${candlesNeeded} RED + DESCENDING CLOSES`);
-    setSignal('strong-sell', '🔥 STRONG SELL', modeTag);
+  } else if (strongSell || bigRedCandle) {
+    const label = bigRedCandle && !strongSell ? '⚡ SCALP SELL' : '🔥 STRONG SELL';
+    setTrendVerdict('confirmed-bear', '▼ BEAR MOMENTUM — 5M RED CONFIRMED');
+    setSignal('strong-sell', label, modeTag);
     updateRisk(price, 'sell', sym);
     if (lastSignalType !== 'strong-sell') {
       lastSignalType = 'strong-sell';
@@ -1316,12 +1333,12 @@ function evaluateSignal(price, change24h, last4, sym) {
   } else {
     const greenCount = last4.filter(c => c.green).length;
     const redCount   = last4.filter(c => c.red).length;
-    let reason = `Pattern: ${greenCount}G ${redCount}R — Waiting for clean momentum`;
-    if (allGreen && !closingHigher) reason = 'Green candles but latest close NOT higher';
-    else if (allRed && !closingLower) reason = 'Red candles but latest close NOT lower';
+    let reason = `Mixed: ${greenCount}G ${redCount}R — Watch next 5m candle`;
+    if (latest.green && !previous.green) reason = 'Only 1 green — wait for 2nd confirm';
+    if (latest.red   && !previous.red)   reason = 'Only 1 red — wait for 2nd confirm';
 
-    setTrendVerdict('unconfirmed', `◌ MOMENTUM UNCONFIRMED — ${reason.toUpperCase()}`);
-    setSignal('waiting', 'WAITING', reason);
+    setTrendVerdict('unconfirmed', `◌ MOMENTUM BUILDING — ${reason.toUpperCase()}`);
+    setSignal('waiting', 'SCANNING...', reason);
     clearRisk();
     if (lastSignalType !== 'waiting') lastSignalType = 'waiting';
   }
@@ -1344,7 +1361,7 @@ function setTrendVerdict(cls, text) {
 // ── RISK MANAGEMENT — 15 pip SL / 30 pip TP (1:2 ratio) ──
 function updateRisk(price, direction, sym) {
   const slPips = 15;
-  const tpPips = 30; // 1:2 ratio
+  const tpPips = 30;
   const slDist = slPips * sym.pip;
   const tpDist = tpPips * sym.pip;
 
@@ -1361,7 +1378,7 @@ function updateRisk(price, direction, sym) {
   document.getElementById('riskSL').textContent    = sl.toFixed(sym.decimals);
   document.getElementById('riskTP').textContent    = tp.toFixed(sym.decimals);
   document.getElementById('rrBadge').textContent   =
-    `RISK:REWARD = 1 : 2 | SL: ${slPips} PIPS (${slDist.toFixed(sym.decimals)}) | TP: ${tpPips} PIPS (${tpDist.toFixed(sym.decimals)})`;
+    `RISK:REWARD = 1:2 | SL: ${slPips}pip (${slDist.toFixed(sym.decimals)}) | TP: ${tpPips}pip (${tpDist.toFixed(sym.decimals)})`;
 }
 
 function clearRisk() {
@@ -1372,11 +1389,18 @@ function clearRisk() {
 }
 
 // ── BOOT ──
+let priceInterval  = null;
+let candleInterval = null;
+
 function init() {
   applySettings();
   loadTVChart('GOLD');
-  fetchData();
-  updateInterval = setInterval(fetchData, 2000);
+  fetchData(); // initial full load
+
+  // Price ticks every 1 second (super fast price updates)
+  priceInterval  = setInterval(fetchLivePrice, 1000);
+  // Candle + signal re-evaluate every 10 seconds
+  candleInterval = setInterval(fetchCandles, 10000);
 }
 
 init();
