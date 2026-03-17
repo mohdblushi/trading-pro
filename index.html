@@ -3,861 +3,828 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>APEX TRADER v2 — XAUUSD / BTCUSDT</title>
+<title>APEX TRADER — DUAL ASSET MONITOR</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg-void:    #010508;
-    --bg-panel:   #050d14;
-    --bg-card:    #08131e;
-    --border:     rgba(0,200,255,0.10);
-    --border-hi:  rgba(0,200,255,0.35);
-    --cyan:       #00c8ff;
-    --cyan-dim:   rgba(0,200,255,0.12);
-    --green:      #00ff9d;
-    --green-dim:  rgba(0,255,157,0.10);
-    --green-glow: rgba(0,255,157,0.35);
-    --red:        #ff3050;
-    --red-dim:    rgba(255,48,80,0.10);
-    --red-glow:   rgba(255,48,80,0.35);
-    --gold:       #ffd200;
-    --gold-dim:   rgba(255,210,0,0.10);
-    --amber:      #ff9a00;
-    --gray:       rgba(232,244,255,0.18);
-    --txt:        #ddeeff;
-    --txt-2:      rgba(221,238,255,0.50);
-    --txt-3:      rgba(221,238,255,0.25);
-    --mono:       'Share Tech Mono', monospace;
-    --display:    'Orbitron', monospace;
-    --body:       'Rajdhani', sans-serif;
-  }
+:root {
+  --void:       #010609;
+  --card:       #070f18;
+  --card2:      #06100d;
+  --border:     rgba(255,255,255,0.07);
 
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  /* BTC — cyan */
+  --btc:        #00d4ff;
+  --btc-dim:    rgba(0,212,255,0.08);
+  --btc-glow:   rgba(0,212,255,0.30);
+  --btc-border: rgba(0,212,255,0.22);
 
-  html { scroll-behavior: smooth; }
+  /* GOLD — gold */
+  --xau:        #ffd000;
+  --xau-dim:    rgba(255,208,0,0.08);
+  --xau-glow:   rgba(255,208,0,0.28);
+  --xau-border: rgba(255,208,0,0.22);
 
-  body {
-    background: var(--bg-void);
-    color: var(--txt);
-    font-family: var(--body);
-    min-height: 100vh;
-    overflow-x: hidden;
-    background-image:
-      radial-gradient(ellipse 90% 55% at 50% -10%, rgba(0,180,255,0.06) 0%, transparent 65%),
-      radial-gradient(ellipse 40% 30% at 80% 80%,  rgba(0,255,157,0.03) 0%, transparent 60%);
-  }
+  /* signals */
+  --green:      #00ff9d;
+  --green-dim:  rgba(0,255,157,0.09);
+  --green-glow: rgba(0,255,157,0.35);
+  --red:        #ff2e55;
+  --red-dim:    rgba(255,46,85,0.09);
+  --red-glow:   rgba(255,46,85,0.32);
+  --amber:      #ff9500;
 
-  /* scanlines */
-  body::before {
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:9998;
-    background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);
-  }
-  /* grid */
-  body::after {
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background-image:
-      linear-gradient(rgba(0,200,255,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,200,255,0.025) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
+  --txt:        #ddeeff;
+  --txt2:       rgba(221,238,255,0.50);
+  --txt3:       rgba(221,238,255,0.24);
 
-  /* ════════════════ LAYOUT ════════════════ */
-  .wrap { position:relative; z-index:1; max-width:1440px; margin:0 auto; padding:20px 24px 48px; }
+  --mono:    'Share Tech Mono', monospace;
+  --display: 'Orbitron', monospace;
+  --body:    'Rajdhani', sans-serif;
+}
 
-  /* ════════════════ HEADER ════════════════ */
-  .hdr {
-    display:flex; align-items:center; justify-content:space-between;
-    padding-bottom:22px; border-bottom:1px solid var(--border); margin-bottom:24px;
-  }
-  .brand { display:flex; align-items:center; gap:14px; }
-  .brand-icon {
-    width:46px; height:46px; border-radius:10px;
-    border:1px solid var(--cyan); background:var(--cyan-dim);
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 0 24px rgba(0,200,255,0.18), inset 0 0 16px rgba(0,200,255,0.06);
-    animation: iconPulse 4s ease-in-out infinite;
-  }
-  @keyframes iconPulse {
-    0%,100%{box-shadow:0 0 24px rgba(0,200,255,0.18),inset 0 0 16px rgba(0,200,255,0.06)}
-    50%{box-shadow:0 0 40px rgba(0,200,255,0.38),inset 0 0 20px rgba(0,200,255,0.12)}
-  }
-  .brand-icon svg { width:22px; height:22px; }
-  .brand-name { font-family:var(--display); font-size:20px; font-weight:900; letter-spacing:4px; color:var(--cyan); text-shadow:0 0 18px rgba(0,200,255,0.5); }
-  .brand-sub  { font-family:var(--mono); font-size:9px; color:var(--txt-3); letter-spacing:2px; margin-top:3px; }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
 
-  .hdr-right { display:flex; align-items:center; gap:18px; }
-  .live-pill {
-    display:flex; align-items:center; gap:7px;
-    padding:5px 13px; border-radius:4px;
-    border:1px solid rgba(0,255,157,0.28); background:var(--green-dim);
-    font-family:var(--mono); font-size:10px; color:var(--green); letter-spacing:1px;
-  }
-  .live-dot { width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 1.1s ease-in-out infinite; }
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-  .utc-clock { font-family:var(--mono); font-size:12px; color:var(--txt-2); letter-spacing:1px; }
+body{
+  background:var(--void);
+  color:var(--txt);
+  font-family:var(--body);
+  min-height:100vh;
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 20% 0%,  rgba(0,212,255,0.05)  0%,transparent 60%),
+    radial-gradient(ellipse 70% 40% at 80% 0%,  rgba(255,208,0,0.04)  0%,transparent 60%),
+    radial-gradient(ellipse 60% 30% at 50% 100%,rgba(0,255,157,0.025) 0%,transparent 55%);
+}
 
-  /* ════════════════ CONTROLS ROW ════════════════ */
-  .controls-row { display:flex; align-items:center; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+/* scanlines */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.055) 2px,rgba(0,0,0,0.055) 4px);
+}
+/* dot-grid */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.04) 1px,transparent 1px);
+  background-size:32px 32px;
+}
 
-  .asset-toggle { display:flex; border:1px solid var(--border); border-radius:8px; overflow:hidden; }
-  .asset-btn {
-    padding:11px 28px; background:transparent; border:none; cursor:pointer;
-    font-family:var(--display); font-size:12px; font-weight:700; letter-spacing:2px;
-    color:var(--txt-2); transition:all .22s; position:relative; overflow:hidden;
-  }
-  .asset-btn:first-child { border-right:1px solid var(--border); }
-  .asset-btn::after { content:''; position:absolute; inset:0; opacity:0; transition:opacity .22s; }
-  .asset-btn.gold::after  { background:var(--gold-dim); }
-  .asset-btn.btc::after   { background:rgba(255,154,0,.08); }
-  .asset-btn.active.gold  { color:var(--gold); text-shadow:0 0 14px rgba(255,210,0,.5); }
-  .asset-btn.active.gold::after  { opacity:1; }
-  .asset-btn.active.btc   { color:var(--amber); text-shadow:0 0 14px rgba(255,154,0,.5); }
-  .asset-btn.active.btc::after { opacity:1; }
+/* ═══════════ LAYOUT ═══════════ */
+.wrap{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:18px 22px 48px;}
 
-  /* Timeframe dropdown */
-  .tf-wrap { display:flex; align-items:center; gap:10px; }
-  .tf-label { font-family:var(--mono); font-size:10px; color:var(--txt-3); letter-spacing:1px; }
-  .tf-select {
-    appearance:none; -webkit-appearance:none;
-    background:var(--bg-card); border:1px solid var(--border-hi);
-    border-radius:7px; padding:9px 36px 9px 14px;
-    color:var(--cyan); font-family:var(--display); font-size:12px; font-weight:700; letter-spacing:2px;
-    cursor:pointer; outline:none; transition:border-color .2s, box-shadow .2s;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300c8ff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:calc(100% - 12px) 50%;
-    min-width:100px;
-  }
-  .tf-select:focus { border-color:var(--cyan); box-shadow:0 0 12px rgba(0,200,255,0.2); }
-  .tf-select option { background:#0a1520; color:var(--txt); }
+/* ═══════════ HEADER ═══════════ */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:18px;border-bottom:1px solid var(--border);margin-bottom:22px;
+  flex-wrap:wrap;gap:14px;
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-icon{
+  width:44px;height:44px;border-radius:9px;
+  border:1px solid var(--btc);background:var(--btc-dim);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 22px var(--btc-glow),inset 0 0 14px rgba(0,212,255,0.06);
+  animation:iconPulse 4s ease-in-out infinite;
+}
+@keyframes iconPulse{0%,100%{box-shadow:0 0 22px var(--btc-glow)}50%{box-shadow:0 0 38px rgba(0,212,255,0.55)}}
+.brand-icon svg{width:21px;height:21px;}
+.brand-name{font-family:var(--display);font-size:19px;font-weight:900;letter-spacing:4px;color:var(--btc);text-shadow:0 0 16px var(--btc-glow);}
+.brand-sub{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:2px;margin-top:3px;}
 
-  /* ════════════════ SIGNAL HERO ════════════════ */
-  .signal-hero {
-    border-radius:14px; border:1px solid var(--border);
-    background:var(--bg-card); margin-bottom:20px; overflow:hidden;
-    position:relative;
-  }
-  .signal-hero::before {
-    content:''; position:absolute; top:0;left:0;right:0; height:1px;
-    background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:.4;
-  }
-  .signal-hero-inner {
-    display:flex; align-items:stretch; min-height:130px;
-  }
-  .signal-main {
-    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:24px 32px; border-right:1px solid var(--border);
-    position:relative; overflow:hidden; gap:8px;
-  }
-  .signal-badge {
-    font-family:var(--display); font-size:32px; font-weight:900; letter-spacing:5px;
-    transition:all .3s; text-align:center; line-height:1;
-  }
-  .signal-badge.state-waiting  { color:var(--txt-2); }
-  .signal-badge.state-sideways { color:var(--amber); font-size:18px; letter-spacing:3px; text-shadow:0 0 20px rgba(255,154,0,.4); }
-  .signal-badge.state-buy      { color:var(--green); text-shadow:0 0 30px var(--green-glow); animation:signalFlash .9s ease-in-out infinite; }
-  .signal-badge.state-strong-buy  { color:var(--green); text-shadow:0 0 40px var(--green), 0 0 80px var(--green-glow); animation:signalFlash .6s ease-in-out infinite; font-size:36px; }
-  .signal-badge.state-sell     { color:var(--red); text-shadow:0 0 30px var(--red-glow); animation:signalFlash .9s ease-in-out infinite; }
-  .signal-badge.state-strong-sell { color:var(--red); text-shadow:0 0 40px var(--red), 0 0 80px var(--red-glow); animation:signalFlash .6s ease-in-out infinite; font-size:36px; }
+.hdr-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.live-pill{display:flex;align-items:center;gap:7px;padding:5px 13px;border-radius:4px;border:1px solid rgba(0,255,157,0.28);background:var(--green-dim);font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:1px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:blink 1.1s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+.utc-clock{font-family:var(--mono);font-size:11px;color:var(--txt2);letter-spacing:1px;}
 
-  @keyframes signalFlash { 0%,100%{opacity:1} 50%{opacity:.55} }
+/* TF control */
+.tf-wrap{display:flex;align-items:center;gap:10px;}
+.tf-label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:1px;}
+.tf-select{
+  appearance:none;-webkit-appearance:none;
+  background:var(--card);border:1px solid var(--btc-border);border-radius:7px;
+  padding:8px 34px 8px 13px;color:var(--btc);
+  font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:2px;
+  cursor:pointer;outline:none;transition:border-color .2s,box-shadow .2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' fill='none'%3E%3Cpath d='M1 1l4.5 5L10 1' stroke='%2300d4ff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:calc(100% - 11px) 50%;
+}
+.tf-select:focus{border-color:var(--btc);box-shadow:0 0 12px var(--btc-glow);}
+.tf-select option{background:#0a1520;color:var(--txt);}
 
-  .signal-strength-bar {
-    display:flex; gap:4px; margin-top:4px;
-  }
-  .str-pip {
-    width:18px; height:5px; border-radius:2px;
-    background:var(--gray); transition:background .3s;
-  }
-  .str-pip.lit-green { background:var(--green); box-shadow:0 0 6px var(--green); }
-  .str-pip.lit-red   { background:var(--red);   box-shadow:0 0 6px var(--red); }
+/* settings row */
+.settings-bar{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:12px 18px;margin-bottom:20px;
+}
+.sb-label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:2px;white-space:nowrap;}
+.sb-group{display:flex;align-items:center;gap:8px;}
+.sb-group label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:1px;white-space:nowrap;}
+.sb-group input{
+  width:90px;background:rgba(0,0,0,0.35);border:1px solid var(--border);
+  border-radius:5px;padding:6px 9px;color:var(--btc);
+  font-family:var(--mono);font-size:11px;outline:none;transition:border-color .2s;
+}
+.sb-group input:focus{border-color:var(--btc);}
 
-  .signal-sub-text { font-family:var(--mono); font-size:10px; color:var(--txt-3); letter-spacing:1px; text-align:center; }
+/* ═══════════ DUAL SIGNAL ROW ═══════════ */
+.dual-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
 
-  /* glow bg sweep on strong signal */
-  .signal-main.glow-green::after {
-    content:''; position:absolute; inset:0; pointer-events:none;
-    background:radial-gradient(ellipse 60% 60% at 50% 50%, rgba(0,255,157,0.08) 0%, transparent 70%);
-    animation:sweep 2s ease-in-out infinite;
-  }
-  .signal-main.glow-red::after {
-    content:''; position:absolute; inset:0; pointer-events:none;
-    background:radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,48,80,0.08) 0%, transparent 70%);
-    animation:sweep 2s ease-in-out infinite;
-  }
-  @keyframes sweep{0%,100%{opacity:.6}50%{opacity:1}}
+/* Asset Card */
+.asset-card{
+  border-radius:14px;border:1px solid;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+}
+.asset-card.btc-card{
+  border-color:var(--btc-border);
+  background:linear-gradient(160deg,#060f18 0%,#03080f 100%);
+  box-shadow:0 0 40px rgba(0,212,255,0.05),inset 0 0 60px rgba(0,212,255,0.02);
+}
+.asset-card.xau-card{
+  border-color:var(--xau-border);
+  background:linear-gradient(160deg,#0c0e06 0%,#060600 100%);
+  box-shadow:0 0 40px rgba(255,208,0,0.05),inset 0 0 60px rgba(255,208,0,0.02);
+}
 
-  /* signal side panels */
-  .signal-meta {
-    display:grid; grid-template-columns:1fr 1fr 1fr;
-    flex:2;
-  }
-  .meta-cell {
-    padding:18px 20px; border-right:1px solid var(--border);
-    display:flex; flex-direction:column; justify-content:center; gap:4px;
-  }
-  .meta-cell:last-child { border-right:none; }
-  .meta-cell-label { font-family:var(--mono); font-size:9px; color:var(--txt-3); letter-spacing:2px; }
-  .meta-cell-value { font-family:var(--display); font-size:22px; font-weight:700; line-height:1; }
-  .meta-cell-value.entry-v { color:var(--cyan); }
-  .meta-cell-value.sl-v    { color:var(--red); }
-  .meta-cell-value.tp-v    { color:var(--green); }
-  .meta-rr { font-family:var(--mono); font-size:9px; color:var(--txt-3); margin-top:2px; }
+/* top accent line */
+.asset-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;z-index:2;
+}
+.btc-card::before{background:linear-gradient(90deg,transparent,var(--btc),transparent);}
+.xau-card::before{background:linear-gradient(90deg,transparent,var(--xau),transparent);}
 
-  /* ════════════════ SECONDARY GRID ════════════════ */
-  .sec-grid {
-    display:grid; grid-template-columns:1fr 1fr 1fr;
-    gap:16px; margin-bottom:20px;
-  }
+/* Card header */
+.ac-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px 12px;border-bottom:1px solid var(--border);
+}
+.ac-title{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--display);font-size:13px;font-weight:900;letter-spacing:3px;
+}
+.btc-card .ac-title{color:var(--btc);text-shadow:0 0 14px var(--btc-glow);}
+.xau-card .ac-title{color:var(--xau);text-shadow:0 0 14px var(--xau-glow);}
+.ac-icon{
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;
+}
+.btc-card .ac-icon{background:var(--btc-dim);border:1px solid var(--btc-border);color:var(--btc);}
+.xau-card .ac-icon{background:var(--xau-dim);border:1px solid var(--xau-border);color:var(--xau);}
+.ac-vol-badge{
+  font-family:var(--mono);font-size:9px;letter-spacing:1px;
+  padding:4px 10px;border-radius:4px;
+}
 
-  /* ════════════════ CARD ════════════════ */
-  .card {
-    background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
-    padding:18px 20px; position:relative; overflow:hidden;
-  }
-  .card::before {
-    content:''; position:absolute; top:0;left:0;right:0; height:1px;
-    background:linear-gradient(90deg,transparent,var(--cyan),transparent); opacity:.3;
-  }
-  .card-label {
-    font-family:var(--mono); font-size:9px; color:var(--txt-3);
-    letter-spacing:2px; text-transform:uppercase; margin-bottom:10px;
-  }
+/* Card body */
+.ac-body{padding:16px 18px;display:flex;flex-direction:column;gap:14px;flex:1;}
 
-  /* price card */
-  .price-val {
-    font-family:var(--display); font-size:34px; font-weight:900; letter-spacing:1px;
-    line-height:1; margin-bottom:8px; transition:all .25s;
-  }
-  .price-val.up   { color:var(--green); text-shadow:0 0 16px rgba(0,255,157,.35); }
-  .price-val.down { color:var(--red);   text-shadow:0 0 16px rgba(255,48,80,.35); }
-  .price-val.flat { color:var(--cyan);  text-shadow:0 0 16px rgba(0,200,255,.25); }
-  .chg-row { display:flex; align-items:center; gap:8px; }
-  .chg-pill {
-    padding:3px 10px; border-radius:4px; font-family:var(--mono); font-size:12px; font-weight:600;
-  }
-  .chg-pill.up   { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,255,157,.2); }
-  .chg-pill.down { background:var(--red-dim);   color:var(--red);   border:1px solid rgba(255,48,80,.2); }
-  .offset-info { font-family:var(--mono); font-size:9px; color:var(--txt-3); margin-top:10px; letter-spacing:1px; }
+/* Price row */
+.price-row{display:flex;align-items:flex-end;justify-content:space-between;}
+.price-big{font-family:var(--display);font-size:30px;font-weight:900;letter-spacing:1px;line-height:1;transition:all .25s;}
+.price-big.up  {color:var(--green);text-shadow:0 0 14px rgba(0,255,157,.3);}
+.price-big.down{color:var(--red);  text-shadow:0 0 14px rgba(255,46,85,.3);}
+.price-big.flat{color:var(--txt2);}
+.price-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.chg-pill{padding:3px 9px;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:600;}
+.chg-pill.up  {background:var(--green-dim);color:var(--green);border:1px solid rgba(0,255,157,.18);}
+.chg-pill.down{background:var(--red-dim);  color:var(--red);  border:1px solid rgba(255,46,85,.18);}
+.hl-info{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:.5px;}
 
-  /* volatility card */
-  .vol-big { font-family:var(--display); font-size:28px; font-weight:900; }
-  .vol-track { height:5px; background:rgba(255,255,255,.06); border-radius:3px; margin:10px 0 5px; overflow:hidden; }
-  .vol-fill  { height:100%; border-radius:3px; transition:width .5s ease, background .3s; }
-  .vol-lbl   { font-family:var(--mono); font-size:9px; color:var(--txt-3); letter-spacing:1px; }
-  .vol-badge {
-    display:inline-flex; align-items:center; gap:6px;
-    padding:4px 10px; border-radius:4px; margin-top:8px;
-    font-family:var(--mono); font-size:9px; letter-spacing:1px;
-  }
-  .vol-badge.ok  { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,255,157,.2); }
-  .vol-badge.low { background:rgba(255,154,0,.08); color:var(--amber); border:1px solid rgba(255,154,0,.2); }
+/* Volatility bar */
+.vol-row{display:flex;flex-direction:column;gap:4px;}
+.vol-top{display:flex;align-items:center;justify-content:space-between;}
+.vol-label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:1px;}
+.vol-pct{font-family:var(--mono);font-size:11px;font-weight:700;}
+.vol-track{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+.vol-fill{height:100%;border-radius:2px;transition:width .5s,background .3s;}
 
-  /* candle card */
-  .candle-card { grid-column: span 1; }
-  .candle-strip { display:flex; gap:8px; margin-top:10px; }
-  .c-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; }
-  .c-lbl  { font-family:var(--mono); font-size:8px; color:var(--txt-3); letter-spacing:1px; }
-  .c-box  {
-    width:100%; height:52px; border-radius:6px; border:1px solid;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; transition:all .25s;
-  }
-  .c-box.green { border-color:rgba(0,255,157,.4); background:rgba(0,255,157,.04); }
-  .c-box.red   { border-color:rgba(255,48,80,.4);  background:rgba(255,48,80,.04);  }
-  .c-box.flat  { border-color:var(--border); background:transparent; }
-  .c-arrow { font-size:15px; font-weight:bold; }
-  .c-box.green .c-arrow { color:var(--green); }
-  .c-box.red   .c-arrow { color:var(--red); }
-  .c-box.flat  .c-arrow { color:var(--txt-3); }
-  .c-close { font-family:var(--mono); font-size:9px; color:var(--txt-2); }
+/* Candle strip */
+.candle-section{}
+.candle-section-label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:1px;margin-bottom:8px;}
+.candle-strip{display:flex;gap:6px;}
+.c-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.c-age{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:.5px;}
+.c-box{
+  width:100%;height:50px;border-radius:6px;border:1px solid;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  transition:all .25s;
+}
+.c-box.green{border-color:rgba(0,255,157,.38);background:rgba(0,255,157,.04);}
+.c-box.red  {border-color:rgba(255,46,85,.38); background:rgba(255,46,85,.04);}
+.c-box.flat {border-color:var(--border);background:transparent;}
+.c-arrow{font-size:13px;font-weight:bold;}
+.c-box.green .c-arrow{color:var(--green);}
+.c-box.red   .c-arrow{color:var(--red);}
+.c-box.flat  .c-arrow{color:var(--txt3);}
+.c-close{font-family:var(--mono);font-size:8px;color:var(--txt2);}
+.c-dir{font-family:var(--mono);font-size:7px;margin-top:1px;}
+.c-dir.green{color:var(--green);}
+.c-dir.red  {color:var(--red);}
+.c-dir.flat {color:var(--txt3);}
 
-  .trend-bar {
-    margin-top:10px; padding:7px 10px; border-radius:6px; border:1px solid;
-    font-family:var(--mono); font-size:10px; letter-spacing:1px;
-    display:flex; align-items:center; gap:6px;
-  }
-  .trend-bar.bull  { border-color:rgba(0,255,157,.3); background:var(--green-dim); color:var(--green); }
-  .trend-bar.bear  { border-color:rgba(255,48,80,.3);  background:var(--red-dim);   color:var(--red); }
-  .trend-bar.none  { border-color:var(--border); background:transparent; color:var(--txt-3); }
+/* Signal badge */
+.signal-section{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;padding:14px 10px;border-radius:10px;border:1px solid;
+  position:relative;overflow:hidden;
+  transition:all .3s;
+}
+.signal-section.state-waiting  {border-color:var(--border);background:transparent;}
+.signal-section.state-sideways {border-color:rgba(255,149,0,.3);background:rgba(255,149,0,.05);}
+.signal-section.state-buy      {border-color:rgba(0,255,157,.35);background:rgba(0,255,157,.04);}
+.signal-section.state-strong-buy  {border-color:var(--green);background:rgba(0,255,157,.07);box-shadow:0 0 30px rgba(0,255,157,.15),inset 0 0 30px rgba(0,255,157,.04);}
+.signal-section.state-sell     {border-color:rgba(255,46,85,.35);background:rgba(255,46,85,.04);}
+.signal-section.state-strong-sell {border-color:var(--red);background:rgba(255,46,85,.07);box-shadow:0 0 30px rgba(255,46,85,.15),inset 0 0 30px rgba(255,46,85,.04);}
 
-  /* ════════════════ SETTINGS ════════════════ */
-  .settings {
-    background:var(--bg-card); border:1px solid var(--border);
-    border-radius:12px; padding:18px 20px; margin-bottom:20px; position:relative; overflow:hidden;
-  }
-  .settings::before {
-    content:''; position:absolute; top:0;left:0;right:0; height:1px;
-    background:linear-gradient(90deg,transparent,var(--gold),transparent); opacity:.35;
-  }
-  .settings-title { font-family:var(--mono); font-size:10px; color:var(--txt-3); letter-spacing:2px; margin-bottom:14px; }
-  .settings-grid  { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
-  .s-item label   { display:block; font-family:var(--mono); font-size:9px; color:var(--txt-3); letter-spacing:1px; margin-bottom:5px; text-transform:uppercase; }
-  .s-item input   {
-    width:100%; background:rgba(0,0,0,.35); border:1px solid var(--border);
-    border-radius:6px; padding:8px 10px; color:var(--cyan);
-    font-family:var(--mono); font-size:12px; outline:none; transition:border-color .2s;
-  }
-  .s-item input:focus { border-color:var(--cyan); box-shadow:0 0 10px rgba(0,200,255,.1); }
+.sig-badge{
+  font-family:var(--display);font-weight:900;letter-spacing:4px;line-height:1;
+  text-align:center;transition:all .25s;
+}
+.state-waiting  .sig-badge{font-size:18px;color:var(--txt3);}
+.state-sideways .sig-badge{font-size:14px;color:var(--amber);letter-spacing:2px;text-shadow:0 0 18px rgba(255,149,0,.4);}
+.state-buy      .sig-badge{font-size:22px;color:var(--green);text-shadow:0 0 24px var(--green-glow);animation:sigFlash .9s ease-in-out infinite;}
+.state-strong-buy .sig-badge{font-size:26px;color:var(--green);text-shadow:0 0 36px var(--green),0 0 70px var(--green-glow);animation:sigFlash .55s ease-in-out infinite;}
+.state-sell     .sig-badge{font-size:22px;color:var(--red);  text-shadow:0 0 24px var(--red-glow);  animation:sigFlash .9s ease-in-out infinite;}
+.state-strong-sell .sig-badge{font-size:26px;color:var(--red);text-shadow:0 0 36px var(--red),0 0 70px var(--red-glow);animation:sigFlash .55s ease-in-out infinite;}
+@keyframes sigFlash{0%,100%{opacity:1}50%{opacity:.5}}
 
-  /* ════════════════ CHART SECTION ════════════════ */
-  .chart-wrap { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .chart-hdr  {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:12px 18px; border-bottom:1px solid var(--border); background:rgba(0,0,0,.25);
-  }
-  .chart-hdr-l { display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:10px; color:var(--txt-2); letter-spacing:2px; }
-  .chart-sym   { padding:3px 10px; border:1px solid var(--border-hi); border-radius:4px; background:var(--cyan-dim); font-family:var(--display); font-size:10px; color:var(--cyan); letter-spacing:1px; }
-  .chart-tf-badge { padding:3px 8px; border:1px solid rgba(255,210,0,.25); border-radius:4px; background:var(--gold-dim); font-family:var(--display); font-size:10px; color:var(--gold); letter-spacing:1px; }
-  #tv-wrap { height:500px; }
+.sig-pips{display:flex;gap:4px;}
+.pip{width:16px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);transition:all .25s;}
+.pip.g{background:var(--green);box-shadow:0 0 5px var(--green);}
+.pip.r{background:var(--red);  box-shadow:0 0 5px var(--red);}
+.sig-sub{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:1px;text-align:center;}
 
-  /* ════════════════ STATUS BAR ════════════════ */
-  .status-bar {
-    display:flex; align-items:center; justify-content:space-between;
-    padding-top:14px; margin-top:10px;
-    border-top:1px solid var(--border);
-    font-family:var(--mono); font-size:9px; color:var(--txt-3); letter-spacing:1px;
-  }
-  .status-items { display:flex; gap:22px; }
-  .status-items span { color:var(--txt-2); }
+/* Risk row */
+.risk-row{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;
+  border-top:1px solid var(--border);padding-top:12px;
+}
+.r-cell{
+  display:flex;flex-direction:column;gap:3px;
+  padding:8px 10px;border-radius:7px;border:1px solid;
+}
+.r-cell.entry{border-color:rgba(0,212,255,.18);background:rgba(0,212,255,.05);}
+.r-cell.sl   {border-color:rgba(255,46,85,.18);  background:rgba(255,46,85,.05);}
+.r-cell.tp   {border-color:rgba(0,255,157,.18);  background:rgba(0,255,157,.05);}
+.r-lbl{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:1px;}
+.r-val{font-family:var(--display);font-size:13px;font-weight:700;line-height:1;}
+.r-cell.entry .r-val{color:var(--btc);}
+.r-cell.sl    .r-val{color:var(--red);}
+.r-cell.tp    .r-val{color:var(--green);}
+.r-rr{font-family:var(--mono);font-size:7px;color:var(--txt3);}
 
-  /* ════════════════ FLASH ════════════════ */
-  @keyframes flashIn { from{opacity:.4} to{opacity:1} }
-  .flash { animation:flashIn .25s ease; }
+/* XAU card overrides entry color */
+.xau-card .r-cell.entry .r-val{color:var(--xau);}
 
-  /* ════════════════ RESPONSIVE ════════════════ */
-  @media(max-width:960px) {
-    .sec-grid { grid-template-columns:1fr 1fr; }
-    .signal-meta { grid-template-columns:1fr 1fr; }
-    .settings-grid { grid-template-columns:repeat(3,1fr); }
-  }
-  @media(max-width:640px) {
-    .sec-grid { grid-template-columns:1fr; }
-    .signal-hero-inner { flex-direction:column; }
-    .signal-meta { grid-template-columns:1fr 1fr 1fr; border-top:1px solid var(--border); }
-    .settings-grid { grid-template-columns:1fr 1fr; }
-  }
+/* ═══════════ DUAL CHARTS ═══════════ */
+.dual-charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px;}
+.chart-wrap{border-radius:12px;overflow:hidden;border:1px solid;}
+.chart-wrap.btc-chart{border-color:var(--btc-border);}
+.chart-wrap.xau-chart{border-color:var(--xau-border);}
+.chart-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);
+}
+.chart-hdr-l{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:2px;}
+.btc-chart .chart-hdr-l{color:var(--btc);}
+.xau-chart .chart-hdr-l{color:var(--xau);}
+.chart-sym{
+  padding:2px 9px;border-radius:4px;
+  font-family:var(--display);font-size:9px;letter-spacing:1px;
+}
+.btc-chart .chart-sym{background:var(--btc-dim);border:1px solid var(--btc-border);color:var(--btc);}
+.xau-chart .chart-sym{background:var(--xau-dim);border:1px solid var(--xau-border);color:var(--xau);}
+.chart-hdr-r{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:1px;}
+.chart-body{height:420px;background:var(--void);}
+
+/* ═══════════ STATUS BAR ═══════════ */
+.status-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:14px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:1px;flex-wrap:wrap;gap:8px;
+}
+.status-items{display:flex;gap:20px;flex-wrap:wrap;}
+.status-items span{color:var(--txt2);}
+
+/* ═══════════ FLASH ═══════════ */
+@keyframes flashIn{from{opacity:.35}to{opacity:1}}
+.flash{animation:flashIn .22s ease;}
+
+/* ═══════════ RESPONSIVE ═══════════ */
+@media(max-width:1000px){
+  .dual-row   {grid-template-columns:1fr;}
+  .dual-charts{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  .settings-bar{flex-direction:column;align-items:flex-start;}
+  .hdr{flex-direction:column;align-items:flex-start;}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <!-- ── HEADER ── -->
-  <header class="hdr">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#00c8ff" stroke-width="1.5">
-          <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-          <polyline points="16 7 22 7 22 13"/>
-        </svg>
-      </div>
-      <div>
-        <div class="brand-name">APEX TRADER</div>
-        <div class="brand-sub">MULTI-STRENGTH SIGNAL ENGINE v2.0 — XAUUSD / BTCUSDT</div>
-      </div>
+<!-- ════════════════════════════════
+     HEADER
+═════════════════════════════════ -->
+<header class="hdr">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ff" stroke-width="1.5">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
+      </svg>
     </div>
-    <div class="hdr-right">
-      <div class="live-pill"><div class="live-dot"></div>LIVE</div>
-      <div class="utc-clock" id="clock">--:--:-- UTC</div>
+    <div>
+      <div class="brand-name">APEX TRADER</div>
+      <div class="brand-sub">DUAL ASSET MONITOR — BTCUSDT &amp; XAUUSD — LIVE</div>
     </div>
-  </header>
-
-  <!-- ── CONTROLS ROW ── -->
-  <div class="controls-row">
-    <div class="asset-toggle">
-      <button class="asset-btn gold active" onclick="setAsset('GOLD')">⬡ XAUUSD</button>
-      <button class="asset-btn btc"         onclick="setAsset('BTC')">₿ BTCUSDT</button>
-    </div>
+  </div>
+  <div class="hdr-right">
     <div class="tf-wrap">
       <span class="tf-label">TIMEFRAME:</span>
-      <select class="tf-select" id="tfSelect" onchange="setTimeframe(this.value)">
+      <select class="tf-select" id="tfSelect" onchange="onTfChange(this.value)">
         <option value="1m">1 MIN</option>
         <option value="5m" selected>5 MIN</option>
         <option value="15m">15 MIN</option>
       </select>
     </div>
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <div class="utc-clock" id="clock">--:--:-- UTC</div>
   </div>
+</header>
 
-  <!-- ── SIGNAL HERO ── -->
-  <div class="signal-hero" id="signalHero">
-    <div class="signal-hero-inner">
-      <!-- main badge -->
-      <div class="signal-main" id="signalMain">
-        <div class="signal-badge state-waiting" id="signalBadge">INITIALIZING</div>
-        <div class="signal-strength-bar" id="strengthPips">
-          <div class="str-pip" id="p1"></div>
-          <div class="str-pip" id="p2"></div>
-          <div class="str-pip" id="p3"></div>
-          <div class="str-pip" id="p4"></div>
-        </div>
-        <div class="signal-sub-text" id="signalSub">Connecting to market data...</div>
-      </div>
-      <!-- ENTRY / SL / TP -->
-      <div class="signal-meta">
-        <div class="meta-cell">
-          <div class="meta-cell-label">◈ ENTRY</div>
-          <div class="meta-cell-value entry-v" id="metaEntry">—</div>
-          <div class="meta-rr">CURRENT PRICE</div>
-        </div>
-        <div class="meta-cell">
-          <div class="meta-cell-label">◈ STOP LOSS</div>
-          <div class="meta-cell-value sl-v" id="metaSL">—</div>
-          <div class="meta-rr" id="slDistLabel">DISTANCE: —</div>
-        </div>
-        <div class="meta-cell">
-          <div class="meta-cell-label">◈ TAKE PROFIT</div>
-          <div class="meta-cell-value tp-v" id="metaTP">—</div>
-          <div class="meta-rr">RATIO 1 : 2</div>
-        </div>
-      </div>
-    </div>
+<!-- ════════════════════════════════
+     SETTINGS BAR
+═════════════════════════════════ -->
+<div class="settings-bar">
+  <span class="sb-label">⚙ MT5 SYNC:</span>
+  <div class="sb-group">
+    <label>BTC OFFSET</label>
+    <input type="number" id="offBtc" value="0" step="0.1" onchange="applySettings()">
   </div>
-
-  <!-- ── SECONDARY GRID ── -->
-  <div class="sec-grid">
-
-    <!-- Price Card -->
-    <div class="card">
-      <div class="card-label">◈ LIVE PRICE</div>
-      <div class="price-val flat" id="priceVal">—</div>
-      <div class="chg-row">
-        <div class="chg-pill up" id="chgPill">—</div>
-        <span style="font-family:var(--mono);font-size:10px;color:var(--txt-3)">24H CHANGE</span>
-      </div>
-      <div class="offset-info" id="offsetInfo">OFFSET: +0.00 | H: — | L: —</div>
-    </div>
-
-    <!-- Volatility Card -->
-    <div class="card">
-      <div class="card-label">◈ VOLATILITY SHIELD</div>
-      <div style="display:flex;align-items:baseline;gap:8px;">
-        <div class="vol-big" id="volBig">0.00%</div>
-        <span style="font-family:var(--mono);font-size:9px;color:var(--txt-3)">24H ABS MOVE</span>
-      </div>
-      <div class="vol-track"><div class="vol-fill" id="volFill" style="width:0%"></div></div>
-      <div class="vol-lbl">THRESHOLD: <span id="volThreshDisp">0.65</span>% &nbsp;|&nbsp; <span id="volRaw">—</span></div>
-      <div class="vol-badge low" id="volBadge"><span>●</span> SHIELD ACTIVE — MARKET FLAT</div>
-    </div>
-
-    <!-- Candle Card -->
-    <div class="card candle-card">
-      <div class="card-label">◈ CANDLE TREND — <span id="tfBadgeCandle">5M</span></div>
-      <div class="candle-strip" id="candleStrip">
-        <!-- injected -->
-      </div>
-      <div class="trend-bar none" id="trendBar">◌ AWAITING DATA</div>
-    </div>
-
+  <div class="sb-group">
+    <label>XAU OFFSET</label>
+    <input type="number" id="offXau" value="0" step="0.01" onchange="applySettings()">
   </div>
+  <div class="sb-group">
+    <label>SL DISTANCE</label>
+    <input type="number" id="slDist" value="15" step="1" min="1" onchange="applySettings()">
+  </div>
+  <div class="sb-group">
+    <label>VOL THRESHOLD %</label>
+    <input type="number" id="volThr" value="0.65" step="0.01" min="0.1" onchange="applySettings()">
+  </div>
+</div>
 
-  <!-- ── SETTINGS ── -->
-  <div class="settings">
-    <div class="settings-title">⚙ MT5 SYNC SETTINGS</div>
-    <div class="settings-grid">
-      <div class="s-item">
-        <label>Gold Offset (pts)</label>
-        <input type="number" id="offGold" value="0" step="0.01" onchange="applySettings()">
+<!-- ════════════════════════════════
+     DUAL SIGNAL CARDS
+═════════════════════════════════ -->
+<div class="dual-row">
+
+  <!-- ── BTC CARD ── -->
+  <div class="asset-card btc-card">
+    <div class="ac-header">
+      <div class="ac-title">
+        <div class="ac-icon">₿</div>
+        BITCOIN DASHBOARD
       </div>
-      <div class="s-item">
-        <label>BTC Offset (pts)</label>
-        <input type="number" id="offBtc" value="0" step="0.1" onchange="applySettings()">
+      <div class="ac-vol-badge" id="btcVolBadge" style="background:rgba(255,149,0,.08);color:var(--amber);border:1px solid rgba(255,149,0,.2);">
+        VOL: —
       </div>
-      <div class="s-item">
-        <label>SL Distance (pts)</label>
-        <input type="number" id="slDist" value="15" step="1" min="1" onchange="applySettings()">
+    </div>
+    <div class="ac-body">
+
+      <!-- Price -->
+      <div class="price-row">
+        <div class="price-big flat" id="btcPrice">—</div>
+        <div class="price-right">
+          <div class="chg-pill up" id="btcChg">—</div>
+          <div class="hl-info" id="btcHL">H: — &nbsp; L: —</div>
+        </div>
       </div>
-      <div class="s-item">
-        <label>Vol Threshold (%)</label>
-        <input type="number" id="volThr" value="0.65" step="0.01" min="0.1" onchange="applySettings()">
+
+      <!-- Volatility -->
+      <div class="vol-row">
+        <div class="vol-top">
+          <span class="vol-label">VOLATILITY SHIELD</span>
+          <span class="vol-pct" id="btcVolPct" style="color:var(--amber)">0.00%</span>
+        </div>
+        <div class="vol-track"><div class="vol-fill" id="btcVolBar" style="width:0%"></div></div>
       </div>
-      <div class="s-item">
-        <label>Update Interval (s)</label>
-        <input type="number" id="updateInt" value="2" step="1" min="1" max="30" onchange="applySettings()">
+
+      <!-- Candles -->
+      <div class="candle-section">
+        <div class="candle-section-label">◈ 4-CANDLE TREND — <span id="btcTfLabel">5M</span></div>
+        <div class="candle-strip" id="btcCandles">
+          <div class="c-item"><div class="c-age">C-4</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+          <div class="c-item"><div class="c-age">C-3</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+          <div class="c-item"><div class="c-age">C-2</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+          <div class="c-item"><div class="c-age">C-1 ★</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+        </div>
       </div>
+
+      <!-- Signal -->
+      <div class="signal-section state-waiting" id="btcSigSection">
+        <div class="sig-badge" id="btcSigBadge">INITIALIZING</div>
+        <div class="sig-pips">
+          <div class="pip" id="btcP1"></div><div class="pip" id="btcP2"></div>
+          <div class="pip" id="btcP3"></div><div class="pip" id="btcP4"></div>
+        </div>
+        <div class="sig-sub" id="btcSigSub">Connecting...</div>
+      </div>
+
+      <!-- Risk -->
+      <div class="risk-row">
+        <div class="r-cell entry"><div class="r-lbl">◈ ENTRY</div><div class="r-val" id="btcEntry">—</div><div class="r-rr">CURRENT</div></div>
+        <div class="r-cell sl">   <div class="r-lbl">◈ STOP LOSS</div><div class="r-val" id="btcSL">—</div><div class="r-rr" id="btcSLd">DIST: —</div></div>
+        <div class="r-cell tp">   <div class="r-lbl">◈ TAKE PROFIT</div><div class="r-val" id="btcTP">—</div><div class="r-rr">1 : 2</div></div>
+      </div>
+
     </div>
   </div>
 
-  <!-- ── TRADINGVIEW CHART ── -->
-  <div class="chart-wrap">
+  <!-- ── XAU CARD ── -->
+  <div class="asset-card xau-card">
+    <div class="ac-header">
+      <div class="ac-title">
+        <div class="ac-icon">⬡</div>
+        GOLD DASHBOARD
+      </div>
+      <div class="ac-vol-badge" id="xauVolBadge" style="background:rgba(255,149,0,.08);color:var(--amber);border:1px solid rgba(255,149,0,.2);">
+        VOL: —
+      </div>
+    </div>
+    <div class="ac-body">
+
+      <!-- Price -->
+      <div class="price-row">
+        <div class="price-big flat" id="xauPrice">—</div>
+        <div class="price-right">
+          <div class="chg-pill up" id="xauChg">—</div>
+          <div class="hl-info" id="xauHL">H: — &nbsp; L: —</div>
+        </div>
+      </div>
+
+      <!-- Volatility -->
+      <div class="vol-row">
+        <div class="vol-top">
+          <span class="vol-label">VOLATILITY SHIELD</span>
+          <span class="vol-pct" id="xauVolPct" style="color:var(--amber)">0.00%</span>
+        </div>
+        <div class="vol-track"><div class="vol-fill" id="xauVolBar" style="width:0%"></div></div>
+      </div>
+
+      <!-- Candles -->
+      <div class="candle-section">
+        <div class="candle-section-label">◈ 4-CANDLE TREND — <span id="xauTfLabel">5M</span></div>
+        <div class="candle-strip" id="xauCandles">
+          <div class="c-item"><div class="c-age">C-4</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+          <div class="c-item"><div class="c-age">C-3</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+          <div class="c-item"><div class="c-age">C-2</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+          <div class="c-item"><div class="c-age">C-1 ★</div><div class="c-box flat"><div class="c-arrow">—</div><div class="c-close">—</div></div></div>
+        </div>
+      </div>
+
+      <!-- Signal -->
+      <div class="signal-section state-waiting" id="xauSigSection">
+        <div class="sig-badge" id="xauSigBadge">INITIALIZING</div>
+        <div class="sig-pips">
+          <div class="pip" id="xauP1"></div><div class="pip" id="xauP2"></div>
+          <div class="pip" id="xauP3"></div><div class="pip" id="xauP4"></div>
+        </div>
+        <div class="sig-sub" id="xauSigSub">Connecting...</div>
+      </div>
+
+      <!-- Risk -->
+      <div class="risk-row">
+        <div class="r-cell entry"><div class="r-lbl">◈ ENTRY</div><div class="r-val" id="xauEntry">—</div><div class="r-rr">CURRENT</div></div>
+        <div class="r-cell sl">   <div class="r-lbl">◈ STOP LOSS</div><div class="r-val" id="xauSL">—</div><div class="r-rr" id="xauSLd">DIST: —</div></div>
+        <div class="r-cell tp">   <div class="r-lbl">◈ TAKE PROFIT</div><div class="r-val" id="xauTP">—</div><div class="r-rr">1 : 2</div></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /dual-row -->
+
+<!-- ════════════════════════════════
+     DUAL TRADINGVIEW CHARTS
+═════════════════════════════════ -->
+<div class="dual-charts">
+
+  <div class="chart-wrap btc-chart">
     <div class="chart-hdr">
-      <div class="chart-hdr-l">
-        ◈ TRADINGVIEW LIVE CHART
-        <div class="chart-sym" id="chartSymBadge">XAUUSD</div>
-        <div class="chart-tf-badge" id="chartTfBadge">5MIN</div>
-      </div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--txt-3)">DARK MODE · AUTO SYNC</div>
+      <div class="chart-hdr-l">◈ BTC LIVE CHART <div class="chart-sym">BINANCE:BTCUSDT</div></div>
+      <div class="chart-hdr-r" id="btcChartTf">5MIN · DARK</div>
     </div>
-    <div id="tv-wrap"></div>
+    <div class="chart-body" id="tv-btc"></div>
   </div>
 
-  <!-- ── STATUS BAR ── -->
-  <div class="status-bar">
-    <div class="status-items">
-      <div>ENGINE: <span id="engStat">ACTIVE</span></div>
-      <div>CYCLE: <span id="cycleDisp">2s</span></div>
-      <div>TF: <span id="tfDisp">5M</span></div>
-      <div>LAST TICK: <span id="lastTick">—</span></div>
-      <div>CANDLES MATCHED: <span id="candleMatch">—</span></div>
+  <div class="chart-wrap xau-chart">
+    <div class="chart-hdr">
+      <div class="chart-hdr-l">◈ GOLD LIVE CHART <div class="chart-sym">OANDA:XAUUSD</div></div>
+      <div class="chart-hdr-r" id="xauChartTf">5MIN · DARK</div>
     </div>
-    <div style="color:var(--txt-3)">APEX TRADER © 2025 — FOR EDUCATIONAL USE ONLY</div>
+    <div class="chart-body" id="tv-xau"></div>
   </div>
+
+</div>
+
+<!-- ════════════════════════════════
+     STATUS BAR
+═════════════════════════════════ -->
+<div class="status-bar">
+  <div class="status-items">
+    <div>ENGINE: <span id="engStat">ACTIVE</span></div>
+    <div>CYCLE: <span>3s</span></div>
+    <div>TF: <span id="tfDisp">5MIN</span></div>
+    <div>BTC TICK: <span id="btcTick">—</span></div>
+    <div>XAU TICK: <span id="xauTick">—</span></div>
+  </div>
+  <div>APEX TRADER © 2025 — FOR EDUCATIONAL USE ONLY</div>
+</div>
 
 </div><!-- /wrap -->
 
+<!-- TradingView -->
 <script src="https://s3.tradingview.com/tv.js"></script>
+
 <script>
-// ╔════════════════════════════════════════════════════════╗
-// ║       APEX TRADER v2 — MULTI-STRENGTH ENGINE          ║
-// ╚════════════════════════════════════════════════════════╝
+// ╔═══════════════════════════════════════════════════════╗
+// ║        APEX TRADER — DUAL ASSET ENGINE               ║
+// ╚═══════════════════════════════════════════════════════╝
 
-// ── CONSTANTS ──────────────────────────────────────────
-const SYMBOLS = {
-  GOLD: { binance:'XAUUSDT', tv:'OANDA:XAUUSD',    label:'XAUUSD',  dec:2, pip:0.1 },
-  BTC:  { binance:'BTCUSDT', tv:'BINANCE:BTCUSDT',  label:'BTCUSDT', dec:1, pip:1   }
+const ASSETS = {
+  BTC: { sym:'BTCUSDT', tv:'BINANCE:BTCUSDT', dec:1, pip:1,   pfx:'btc' },
+  XAU: { sym:'XAUUSDT', tv:'OANDA:XAUUSD',   dec:2, pip:0.1, pfx:'xau' }
 };
+const TV_TF  = {'1m':'1','5m':'5','15m':'15'};
+const TF_LBL = {'1m':'1MIN','5m':'5MIN','15m':'15MIN'};
 
-// Binance interval map
-const TF_MAP = { '1m':'1m', '5m':'5m', '15m':'15m' };
-// TradingView interval map
-const TV_TF  = { '1m':'1',  '5m':'5',  '15m':'15'  };
-// Display label map
-const TF_LBL = { '1m':'1MIN', '5m':'5MIN', '15m':'15MIN' };
+let tf       = '5m';
+let settings = { offBtc:0, offXau:0, slDist:15, volThr:0.65 };
+let loopId   = null;
 
-// ── STATE ───────────────────────────────────────────────
-let asset     = 'GOLD';
-let timeframe = '5m';
-let ticker    = null;
-let settings  = { offGold:0, offBtc:0, slDist:15, volThr:0.65, interval:2 };
+// ── Clock ────────────────────────────────────────────────
+(function clock(){
+  const d=new Date();
+  const t=d.toUTCString().match(/(\d{2}:\d{2}:\d{2})/);
+  if(t) document.getElementById('clock').textContent=t[1]+' UTC';
+  setTimeout(clock,1000);
+})();
 
-// ── CLOCK ───────────────────────────────────────────────
-function tickClock() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    now.toUTCString().match(/(\d{2}:\d{2}:\d{2})/)[1] + ' UTC';
-}
-setInterval(tickClock, 1000); tickClock();
-
-// ── SETTINGS ────────────────────────────────────────────
-function applySettings() {
-  settings.offGold  = parseFloat(document.getElementById('offGold').value)  || 0;
-  settings.offBtc   = parseFloat(document.getElementById('offBtc').value)   || 0;
-  settings.slDist   = parseFloat(document.getElementById('slDist').value)   || 15;
-  settings.volThr   = parseFloat(document.getElementById('volThr').value)   || 0.65;
-  settings.interval = parseInt(document.getElementById('updateInt').value)  || 2;
-
-  document.getElementById('volThreshDisp').textContent = settings.volThr.toFixed(2);
-  document.getElementById('cycleDisp').textContent     = settings.interval + 's';
-
-  // restart loop with new interval
-  startLoop();
+// ── Settings ─────────────────────────────────────────────
+function applySettings(){
+  settings.offBtc  = parseFloat(document.getElementById('offBtc').value)||0;
+  settings.offXau  = parseFloat(document.getElementById('offXau').value)||0;
+  settings.slDist  = parseFloat(document.getElementById('slDist').value)||15;
+  settings.volThr  = parseFloat(document.getElementById('volThr').value)||0.65;
 }
 
-// ── ASSET SWITCH ────────────────────────────────────────
-function setAsset(a) {
-  asset = a;
-  document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.asset-btn.${a === 'GOLD' ? 'gold' : 'btc'}`).classList.add('active');
-  resetSignal();
-  loadTV();
-  fetchAll();
+// ── Timeframe change ─────────────────────────────────────
+function onTfChange(val){
+  tf = val;
+  const lbl = TF_LBL[val];
+  document.getElementById('tfDisp').textContent   = lbl;
+  document.getElementById('btcTfLabel').textContent= lbl;
+  document.getElementById('xauTfLabel').textContent= lbl;
+  document.getElementById('btcChartTf').textContent= lbl+' · DARK';
+  document.getElementById('xauChartTf').textContent= lbl+' · DARK';
+  loadCharts();
 }
 
-// ── TIMEFRAME SWITCH ────────────────────────────────────
-function setTimeframe(tf) {
-  timeframe = tf;
-  const lbl = TF_LBL[tf];
-  document.getElementById('tfDisp').textContent      = lbl;
-  document.getElementById('tfBadgeCandle').textContent = lbl;
-  document.getElementById('chartTfBadge').textContent  = lbl;
-  loadTV();
-  fetchAll();
-}
-
-// ── TRADINGVIEW ──────────────────────────────────────────
-function loadTV() {
-  const sym = SYMBOLS[asset];
-  document.getElementById('tv-wrap').innerHTML = '';
-  document.getElementById('chartSymBadge').textContent = sym.label;
-  document.getElementById('chartTfBadge').textContent  = TF_LBL[timeframe];
-
+// ── TradingView ───────────────────────────────────────────
+function makeChart(containerId, symbol, interval){
+  document.getElementById(containerId).innerHTML='';
   new TradingView.widget({
-    container_id: 'tv-wrap',
-    symbol:       sym.tv,
-    interval:     TV_TF[timeframe],
+    container_id: containerId,
+    symbol:       symbol,
+    interval:     interval,
     timezone:     'Etc/UTC',
     theme:        'dark',
     style:        '1',
     locale:       'en',
-    toolbar_bg:   '#050d14',
-    enable_publishing: false,
-    hide_top_toolbar:  false,
-    save_image:        false,
-    backgroundColor:   '#050d14',
-    overrides: {
-      'paneProperties.background':                          '#050d14',
-      'paneProperties.backgroundType':                      'solid',
-      'scalesProperties.textColor':                         'rgba(221,238,255,0.5)',
-      'mainSeriesProperties.candleStyle.upColor':           '#00ff9d',
-      'mainSeriesProperties.candleStyle.downColor':         '#ff3050',
-      'mainSeriesProperties.candleStyle.borderUpColor':     '#00ff9d',
-      'mainSeriesProperties.candleStyle.borderDownColor':   '#ff3050',
-      'mainSeriesProperties.candleStyle.wickUpColor':       '#00ff9d',
-      'mainSeriesProperties.candleStyle.wickDownColor':     '#ff3050',
+    toolbar_bg:   '#010609',
+    enable_publishing:   false,
+    hide_top_toolbar:    false,
+    save_image:          false,
+    backgroundColor:     '#010609',
+    overrides:{
+      'paneProperties.background':                        '#010609',
+      'paneProperties.backgroundType':                    'solid',
+      'scalesProperties.textColor':                       'rgba(221,238,255,0.45)',
+      'mainSeriesProperties.candleStyle.upColor':         '#00ff9d',
+      'mainSeriesProperties.candleStyle.downColor':       '#ff2e55',
+      'mainSeriesProperties.candleStyle.borderUpColor':   '#00ff9d',
+      'mainSeriesProperties.candleStyle.borderDownColor': '#ff2e55',
+      'mainSeriesProperties.candleStyle.wickUpColor':     '#00ff9d',
+      'mainSeriesProperties.candleStyle.wickDownColor':   '#ff2e55',
     },
-    width:  '100%',
-    height: 500,
-    withdateranges:    false,
-    allow_symbol_change: true,
-    details:   false,
-    hotlist:   false,
-    calendar:  false,
+    width:'100%', height:420,
+    allow_symbol_change:true, details:false, hotlist:false, calendar:false,
   });
 }
+function loadCharts(){
+  const iv = TV_TF[tf];
+  makeChart('tv-btc', ASSETS.BTC.tv, iv);
+  makeChart('tv-xau', ASSETS.XAU.tv, iv);
+}
 
-// ── FETCH ────────────────────────────────────────────────
-async function fetchAll() {
-  const sym    = SYMBOLS[asset];
-  const offset = asset === 'GOLD' ? settings.offGold : settings.offBtc;
+// ── Fetch single asset ────────────────────────────────────
+async function fetchAsset(key){
+  const cfg    = ASSETS[key];
+  const offset = key==='BTC' ? settings.offBtc : settings.offXau;
+  const pfx    = cfg.pfx;
 
-  try {
-    // 24h ticker
-    const r1 = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym.binance}`);
-    const t   = await r1.json();
-    const rawPrice = parseFloat(t.lastPrice);
-    const price    = rawPrice + offset;
-    const chg24h   = parseFloat(t.priceChangePercent);
-    const h24      = parseFloat(t.highPrice) + offset;
-    const l24      = parseFloat(t.lowPrice)  + offset;
+  // 24h ticker
+  const r1  = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${cfg.sym}`);
+  const tk  = await r1.json();
+  const raw = parseFloat(tk.lastPrice);
+  const px  = raw + offset;
+  const chg = parseFloat(tk.priceChangePercent);
+  const h24 = parseFloat(tk.highPrice)+offset;
+  const l24 = parseFloat(tk.lowPrice) +offset;
 
-    updatePriceCard(price, chg24h, h24, l24, offset, sym);
-    updateVolCard(Math.abs(chg24h));
+  updatePrice(pfx, px, chg, h24, l24, cfg.dec);
+  const volOk = updateVol(pfx, Math.abs(chg));
 
-    // candles (fetch 6, use last 4 closed = indices 1-4 from end, index 0 = still open)
-    const r2 = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${sym.binance}&interval=${TF_MAP[timeframe]}&limit=7`
-    );
-    const klines = await r2.json();
+  // Klines — last 7, skip open candle at index 0 (most recent open)
+  const r2 = await fetch(
+    `https://api.binance.com/api/v3/klines?symbol=${cfg.sym}&interval=${tf}&limit=7`
+  );
+  const klines = await r2.json();
+  const closed = klines.slice(0,-1).map(k=>({
+    open : parseFloat(k[1])+offset,
+    close: parseFloat(k[4])+offset,
+    green: parseFloat(k[4])>parseFloat(k[1]),
+    red  : parseFloat(k[4])<parseFloat(k[1]),
+  }));
+  const last4 = closed.slice(-4);
 
-    // Convert — exclude the still-open candle (last element)
-    const closed = klines.slice(0, klines.length - 1).map(k => ({
-      open:  parseFloat(k[1]) + offset,
-      close: parseFloat(k[4]) + offset,
-      green: parseFloat(k[4]) > parseFloat(k[1]),
-      red:   parseFloat(k[4]) < parseFloat(k[1]),
-    }));
+  renderCandles(pfx, last4, cfg.dec);
+  evaluateSignal(pfx, px, chg, last4, cfg, volOk);
 
-    // Take the 4 most-recent closed candles (newest = last)
-    const last4 = closed.slice(-4);
-    const last2 = last4.slice(-2);
+  // tick timestamp
+  document.getElementById(pfx+'Tick').textContent = new Date().toLocaleTimeString('en-GB');
+}
 
-    updateCandleCard(last4, sym);
-    evaluateSignal(price, chg24h, last4, last2, sym);
-
-    document.getElementById('lastTick').textContent = new Date().toLocaleTimeString('en-GB');
-    document.getElementById('engStat').textContent  = 'ACTIVE';
-
-  } catch(e) {
-    document.getElementById('engStat').textContent = 'ERROR — RETRYING';
+// ── Parallel fetch both ───────────────────────────────────
+async function fetchAll(){
+  try{
+    await Promise.all([fetchAsset('BTC'), fetchAsset('XAU')]);
+    document.getElementById('engStat').textContent='ACTIVE';
+  } catch(e){
+    document.getElementById('engStat').textContent='ERR – RETRY';
     console.warn(e);
   }
 }
 
-// ── PRICE CARD ───────────────────────────────────────────
-function updatePriceCard(price, chg, h, l, offset, sym) {
-  const el   = document.getElementById('priceVal');
-  const prev = parseFloat(el.dataset.v || 0);
-  el.dataset.v = price;
-  el.className = `price-val ${price > prev ? 'up' : price < prev ? 'down' : 'flat'}`;
-  el.textContent = price.toFixed(sym.dec);
+// ── Price UI ──────────────────────────────────────────────
+function updatePrice(pfx, px, chg, h, l, dec){
+  const el  = document.getElementById(pfx+'Price');
+  const old = parseFloat(el.dataset.v||0);
+  el.dataset.v = px;
+  const dir = px>old?'up':px<old?'down':'flat';
+  el.className = `price-big ${dir}`;
+  el.textContent = px.toFixed(dec);
   el.classList.add('flash');
-  setTimeout(() => el.classList.remove('flash'), 280);
+  setTimeout(()=>el.classList.remove('flash'),240);
 
-  const pill = document.getElementById('chgPill');
-  pill.textContent  = `${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%`;
-  pill.className    = `chg-pill ${chg >= 0 ? 'up' : 'down'}`;
+  const pill = document.getElementById(pfx+'Chg');
+  pill.textContent = `${chg>=0?'+':''}${chg.toFixed(2)}%`;
+  pill.className   = `chg-pill ${chg>=0?'up':'down'}`;
 
-  document.getElementById('offsetInfo').textContent =
-    `OFFSET: ${offset >= 0 ? '+' : ''}${offset.toFixed(2)} | H: ${h.toFixed(sym.dec)} | L: ${l.toFixed(sym.dec)}`;
+  document.getElementById(pfx+'HL').textContent =
+    `H: ${h.toFixed(dec)} &nbsp; L: ${l.toFixed(dec)}`;
 }
 
-// ── VOL CARD ─────────────────────────────────────────────
-function updateVolCard(abs) {
-  const thr   = settings.volThr;
-  const pct   = Math.min((abs / (thr * 3)) * 100, 100);
-  const ok    = abs >= thr;
+// ── Volatility UI ─────────────────────────────────────────
+function updateVol(pfx, abs){
+  const thr = settings.volThr;
+  const pct = Math.min((abs/(thr*3))*100,100);
+  const ok  = abs>=thr;
 
-  document.getElementById('volBig').textContent     = `${abs.toFixed(2)}%`;
-  document.getElementById('volBig').style.color     = ok ? 'var(--green)' : 'var(--amber)';
-  document.getElementById('volRaw').textContent     = `${abs.toFixed(3)}% RAW`;
-  document.getElementById('volThreshDisp').textContent = thr.toFixed(2);
+  const pctEl = document.getElementById(pfx+'VolPct');
+  pctEl.textContent = `${abs.toFixed(2)}%`;
+  pctEl.style.color = ok?'var(--green)':'var(--amber)';
 
-  const fill = document.getElementById('volFill');
-  fill.style.width      = `${pct}%`;
-  fill.style.background = ok
-    ? 'linear-gradient(90deg,var(--green),rgba(0,255,157,.5))'
-    : 'linear-gradient(90deg,var(--amber),rgba(255,154,0,.5))';
+  const bar = document.getElementById(pfx+'VolBar');
+  bar.style.width = `${pct}%`;
+  bar.style.background = ok
+    ? 'linear-gradient(90deg,var(--green),rgba(0,255,157,.45))'
+    : 'linear-gradient(90deg,var(--amber),rgba(255,149,0,.45))';
 
-  const badge = document.getElementById('volBadge');
-  if (ok) {
-    badge.className  = 'vol-badge ok';
-    badge.innerHTML  = '<span>●</span> SHIELD CLEAR — VOLATILITY OK';
+  const badge = document.getElementById(pfx+'VolBadge');
+  if(ok){
+    badge.style.background='var(--green-dim)';
+    badge.style.color='var(--green)';
+    badge.style.border='1px solid rgba(0,255,157,.2)';
+    badge.textContent=`VOL ${abs.toFixed(2)}% ✓`;
   } else {
-    badge.className  = 'vol-badge low';
-    badge.innerHTML  = '<span>●</span> SHIELD ACTIVE — MARKET FLAT';
+    badge.style.background='rgba(255,149,0,.08)';
+    badge.style.color='var(--amber)';
+    badge.style.border='1px solid rgba(255,149,0,.2)';
+    badge.textContent=`VOL ${abs.toFixed(2)}% LOW`;
   }
+  return ok;
 }
 
-// ── CANDLE CARD ──────────────────────────────────────────
-function updateCandleCard(last4, sym) {
-  const strip = document.getElementById('candleStrip');
-  strip.innerHTML = '';
-  last4.forEach((c, i) => {
-    const dir   = c.green ? 'green' : c.red ? 'red' : 'flat';
-    const arrow = c.green ? '▲' : c.red ? '▼' : '—';
-    const age   = last4.length - i;
-    strip.innerHTML += `
+// ── Candles ───────────────────────────────────────────────
+function renderCandles(pfx, last4, dec){
+  const strip = document.getElementById(pfx+'Candles');
+  strip.innerHTML='';
+  last4.forEach((c,i)=>{
+    const age  = last4.length-i;
+    const dir  = c.green?'green':c.red?'red':'flat';
+    const arr  = c.green?'▲':c.red?'▼':'—';
+    strip.innerHTML+=`
       <div class="c-item">
-        <div class="c-lbl">C-${age}${age===1?' ★':''}</div>
+        <div class="c-age">C-${age}${age===1?' ★':''}</div>
         <div class="c-box ${dir}">
-          <div class="c-arrow">${arrow}</div>
-          <div class="c-close">${c.close.toFixed(sym.dec)}</div>
+          <div class="c-arrow">${arr}</div>
+          <div class="c-close">${c.close.toFixed(dec)}</div>
         </div>
-        <div style="font-family:var(--mono);font-size:8px;color:${dir==='green'?'var(--green)':dir==='red'?'var(--red)':'var(--txt-3)'};margin-top:2px;">${dir.toUpperCase()}</div>
+        <div class="c-dir ${dir}">${dir.toUpperCase()}</div>
       </div>`;
   });
 }
 
-// ── SIGNAL EVALUATION ────────────────────────────────────
-function evaluateSignal(price, chg24, last4, last2, sym) {
-  const abs  = Math.abs(chg24);
-  const thr  = settings.volThr;
-
-  // ── VOLATILITY GATE ──
-  if (abs < thr) {
-    showSignal('sideways', 'WAIT — SIDEWAYS MARKET', `24H: ${abs.toFixed(2)}% < ${thr}% threshold`, 0, null);
-    setTrendBar('none', `◌ VOL ${abs.toFixed(2)}% BELOW ${thr}% — NO TRADE`);
-    clearRisk();
-    document.getElementById('candleMatch').textContent = '0/4';
-    return;
+// ── Signal ────────────────────────────────────────────────
+function evaluateSignal(pfx, px, chg, last4, cfg, volOk){
+  if(!volOk){
+    setSignal(pfx,'sideways','WAIT — SIDEWAYS',`24H ${Math.abs(chg).toFixed(2)}% < ${settings.volThr}%`,0,null);
+    clearRisk(pfx); return;
   }
 
-  // ── HELPERS ──
-  const allGreen4 = last4.every(c => c.green);
-  const allRed4   = last4.every(c => c.red);
-  const ascend4   = last4.every((c,i) => i===0 || c.close > last4[i-1].close);
-  const descend4  = last4.every((c,i) => i===0 || c.close < last4[i-1].close);
+  const last2     = last4.slice(-2);
+  const allG4     = last4.every(c=>c.green);
+  const allR4     = last4.every(c=>c.red);
+  const asc4      = last4.every((c,i)=>i===0||c.close>last4[i-1].close);
+  const dsc4      = last4.every((c,i)=>i===0||c.close<last4[i-1].close);
+  const allG2     = last2.every(c=>c.green);
+  const allR2     = last2.every(c=>c.red);
+  const asc2      = last2.every((c,i)=>i===0||c.close>last2[i-1].close);
+  const dsc2      = last2.every((c,i)=>i===0||c.close<last2[i-1].close);
 
-  const allGreen2 = last2.every(c => c.green);
-  const allRed2   = last2.every(c => c.red);
-  const ascend2   = last2.every((c,i) => i===0 || c.close > last2[i-1].close);
-  const descend2  = last2.every((c,i) => i===0 || c.close < last2[i-1].close);
-
-  // ── STRONG BUY — 4 candles ──
-  if (allGreen4 && ascend4) {
-    showSignal('strong-buy', '▲▲ STRONG BUY', '4/4 GREEN + ASCENDING CLOSES', 4, 'buy');
-    setTrendBar('bull', '▲ STRONG BULLISH — 4/4 CANDLES CONFIRMED');
-    updateRisk(price, 'buy', sym);
-    document.getElementById('candleMatch').textContent = '4/4 ★ STRONG';
-    return;
+  if(allG4&&asc4){
+    setSignal(pfx,'strong-buy','▲▲ STRONG BUY','4/4 GREEN + ASCENDING',4,'buy');
+    updateRisk(pfx,px,'buy',cfg); return;
   }
-  // ── STRONG SELL — 4 candles ──
-  if (allRed4 && descend4) {
-    showSignal('strong-sell', '▼▼ STRONG SELL', '4/4 RED + DESCENDING CLOSES', 4, 'sell');
-    setTrendBar('bear', '▼ STRONG BEARISH — 4/4 CANDLES CONFIRMED');
-    updateRisk(price, 'sell', sym);
-    document.getElementById('candleMatch').textContent = '4/4 ★ STRONG';
-    return;
+  if(allR4&&dsc4){
+    setSignal(pfx,'strong-sell','▼▼ STRONG SELL','4/4 RED + DESCENDING',4,'sell');
+    updateRisk(pfx,px,'sell',cfg); return;
   }
-  // ── NORMAL BUY — 2 candles ──
-  if (allGreen2 && ascend2) {
-    showSignal('buy', '▲ BUY', '2/4 GREEN + ASCENDING CLOSES', 2, 'buy');
-    setTrendBar('bull', '▲ BULLISH — 2 CANDLES MATCHED');
-    updateRisk(price, 'buy', sym);
-    document.getElementById('candleMatch').textContent = '2/4 NORMAL';
-    return;
+  if(allG2&&asc2){
+    setSignal(pfx,'buy','▲ BUY','2/4 GREEN + ASCENDING',2,'buy');
+    updateRisk(pfx,px,'buy',cfg); return;
   }
-  // ── NORMAL SELL — 2 candles ──
-  if (allRed2 && descend2) {
-    showSignal('sell', '▼ SELL', '2/4 RED + DESCENDING CLOSES', 2, 'sell');
-    setTrendBar('bear', '▼ BEARISH — 2 CANDLES MATCHED');
-    updateRisk(price, 'sell', sym);
-    document.getElementById('candleMatch').textContent = '2/4 NORMAL';
-    return;
+  if(allR2&&dsc2){
+    setSignal(pfx,'sell','▼ SELL','2/4 RED + DESCENDING',2,'sell');
+    updateRisk(pfx,px,'sell',cfg); return;
   }
 
-  // ── NO SIGNAL ──
-  const gc = last4.filter(c=>c.green).length;
-  const rc = last4.filter(c=>c.red).length;
-  showSignal('waiting', 'WAITING', `Mixed: ${gc}G ${rc}R — Trend unconfirmed`, 0, null);
-  setTrendBar('none', `◌ ${gc}G ${rc}R — NO CLEAN TREND`);
-  clearRisk();
-  document.getElementById('candleMatch').textContent = `${Math.max(gc,rc)}/4`;
+  const gc=last4.filter(c=>c.green).length;
+  const rc=last4.filter(c=>c.red).length;
+  setSignal(pfx,'waiting','WAITING',`Mixed: ${gc}G ${rc}R — No trend`,0,null);
+  clearRisk(pfx);
 }
 
-// ── SHOW SIGNAL ──────────────────────────────────────────
-function showSignal(state, text, sub, strength, dir) {
-  const badge = document.getElementById('signalBadge');
-  badge.className  = `signal-badge state-${state}`;
-  badge.textContent = text;
-  document.getElementById('signalSub').textContent = sub;
-
-  // strength pips
-  const pips = ['p1','p2','p3','p4'];
-  const litCls = dir === 'buy' ? 'lit-green' : dir === 'sell' ? 'lit-red' : '';
-  pips.forEach((id, i) => {
-    const el = document.getElementById(id);
-    el.className = 'str-pip' + (i < strength && litCls ? ' ' + litCls : '');
+function setSignal(pfx, state, badge, sub, strength, dir){
+  document.getElementById(pfx+'SigSection').className=`signal-section state-${state}`;
+  document.getElementById(pfx+'SigBadge').textContent=badge;
+  document.getElementById(pfx+'SigSub').textContent=sub;
+  const pips=['P1','P2','P3','P4'];
+  const litCls=dir==='buy'?'g':dir==='sell'?'r':'';
+  pips.forEach((p,i)=>{
+    const el=document.getElementById(pfx+p);
+    el.className='pip'+(i<strength&&litCls?' '+litCls:'');
   });
-
-  // glow background
-  const main = document.getElementById('signalMain');
-  main.classList.remove('glow-green','glow-red');
-  if (state === 'strong-buy' || state === 'buy') main.classList.add('glow-green');
-  if (state === 'strong-sell'|| state === 'sell') main.classList.add('glow-red');
 }
 
-// ── TREND BAR ────────────────────────────────────────────
-function setTrendBar(cls, text) {
-  const el = document.getElementById('trendBar');
-  el.className = `trend-bar ${cls}`;
-  el.textContent = text;
+// ── Risk ──────────────────────────────────────────────────
+function updateRisk(pfx, px, dir, cfg){
+  const slD = settings.slDist * cfg.pip;
+  const tpD = slD*2;
+  const sl  = dir==='buy'?px-slD:px+slD;
+  const tp  = dir==='buy'?px+tpD:px-tpD;
+  document.getElementById(pfx+'Entry').textContent = px.toFixed(cfg.dec);
+  document.getElementById(pfx+'SL').textContent    = sl.toFixed(cfg.dec);
+  document.getElementById(pfx+'TP').textContent    = tp.toFixed(cfg.dec);
+  document.getElementById(pfx+'SLd').textContent   = `DIST: ${slD.toFixed(cfg.dec)}`;
+}
+function clearRisk(pfx){
+  ['Entry','SL','TP'].forEach(k=>document.getElementById(pfx+k).textContent='—');
+  document.getElementById(pfx+'SLd').textContent='DIST: —';
 }
 
-// ── RISK MANAGEMENT ─────────────────────────────────────
-function updateRisk(price, dir, sym) {
-  const slD = settings.slDist * sym.pip;
-  const tpD = slD * 2;
-  const sl  = dir === 'buy' ? price - slD : price + slD;
-  const tp  = dir === 'buy' ? price + tpD : price - tpD;
-
-  document.getElementById('metaEntry').textContent  = price.toFixed(sym.dec);
-  document.getElementById('metaSL').textContent     = sl.toFixed(sym.dec);
-  document.getElementById('metaTP').textContent     = tp.toFixed(sym.dec);
-  document.getElementById('slDistLabel').textContent= `DISTANCE: ${slD.toFixed(sym.dec)}`;
-}
-
-function clearRisk() {
-  ['metaEntry','metaSL','metaTP'].forEach(id => document.getElementById(id).textContent = '—');
-  document.getElementById('slDistLabel').textContent = 'DISTANCE: —';
-}
-
-function resetSignal() {
-  showSignal('waiting','WAITING','Switching asset...', 0, null);
-  setTrendBar('none','◌ AWAITING DATA');
-  clearRisk();
-}
-
-// ── LOOP ─────────────────────────────────────────────────
-let loopTimer = null;
-function startLoop() {
-  if (loopTimer) clearInterval(loopTimer);
-  loopTimer = setInterval(fetchAll, settings.interval * 1000);
-}
-
-// ── BOOT ─────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────
 applySettings();
-loadTV();
+loadCharts();
 fetchAll();
-startLoop();
+loopId = setInterval(fetchAll, 3000);
 </script>
 </body>
 </html>
