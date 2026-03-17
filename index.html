@@ -3,40 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V25 - Exness Sync</title>
+    <title>Elite Pro V26 - Prediction Suite</title>
     <style>
-        :root { --bg:#020406; --card:#0a0e14; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; }
-        body { background:#020406; color:white; font-family:sans-serif; margin:0; padding:10px; }
-        .dashboard { background:var(--card); border-radius:25px; padding:20px; border:1px solid #1c212d; text-align:center; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
+        :root { --bg:#05070a; --card:#0d1117; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; --blue:#3b82f6; }
+        body { background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; margin:0; padding:10px; }
+        .dashboard { background:var(--card); border-radius:25px; padding:20px; border:1px solid #21262d; text-align:center; box-shadow: 0 20px 50px rgba(0,0,0,0.7); }
         .switcher { display:flex; gap:10px; margin-bottom:15px; }
-        .s-btn { flex:1; padding:15px; border-radius:12px; border:1px solid #333; background:#1a1f26; color:white; font-weight:bold; cursor:pointer; font-size:12px; }
-        .s-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(240,185,11,0.1); }
-        .price { font-size:45px; font-weight:900; margin:10px 0; color:white; }
-        .sig-box { padding:20px; border-radius:15px; font-size:24px; font-weight:bold; margin:10px 0; border:2px solid #2d3748; }
+        .s-btn { flex:1; padding:15px; border-radius:12px; border:1px solid #30363d; background:#161b22; color:white; font-weight:bold; cursor:pointer; font-size:12px; transition: 0.3s; }
+        .s-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(240,185,11,0.1); box-shadow: 0 0 15px rgba(240,185,11,0.1); }
+        .price { font-size:48px; font-weight:900; margin:10px 0; letter-spacing:-1px; }
+        .sig-box { padding:20px; border-radius:18px; font-size:24px; font-weight:bold; margin:15px 0; border:2px solid #30363d; text-transform:uppercase; }
         .buy { color:var(--green); border-color:var(--green); background:rgba(0,255,170,0.05); }
         .sell { color:var(--red); border-color:var(--red); background:rgba(255,59,92,0.05); }
-        .wait { color:#848e9c; border-color:#444; }
-        .info-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; }
-        .box { background:#141a24; padding:12px; border-radius:10px; text-align:left; border-bottom:2px solid #333; }
-        .label { font-size:10px; color:#848e9c; text-transform:uppercase; margin-bottom:4px; }
-        .val { font-size:16px; font-weight:bold; }
-        #tv-chart { height:480px; border-radius:25px; margin-top:15px; border:1px solid #1c212d; }
+        .wait { color:#8b949e; border-color:#30363d; }
+        .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:15px; }
+        .box { background:#161b22; padding:15px; border-radius:15px; border-bottom:3px solid #30363d; text-align:left; }
+        .label { font-size:11px; color:#8b949e; margin-bottom:5px; text-transform:uppercase; font-weight:bold; }
+        .val { font-size:18px; font-weight:bold; }
+        #tv-chart { height:480px; border-radius:25px; margin-top:15px; border:1px solid #21262d; }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <div class="switcher">
-            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD (EXNESS)</button>
-            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC (EXNESS)</button>
+            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD PRO</button>
+            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC PRO</button>
         </div>
         <div id="price" class="price">--</div>
-        <div id="signal" class="sig-box wait">⏳ CONNECTING...</div>
+        <div id="signal" class="sig-box wait">⏳ INITIALIZING SYNC...</div>
         
-        <div class="info-grid">
-            <div class="box"><div class="label">🟢 Entry Point</div><div id="entry" class="val" style="color:var(--green)">--</div></div>
-            <div class="box"><div class="label">🔴 Stop Loss</div><div id="sl" class="val" style="color:var(--red)">--</div></div>
-            <div class="box"><div class="label">🔵 Take Profit</div><div id="tp" class="val" style="color:var(--green)">--</div></div>
-            <div class="box"><div class="label">📊 Prediction</div><div id="pred" class="val" style="color:var(--gold)">--</div></div>
+        <div class="grid">
+            <div class="box"><div class="label" style="color:var(--green)">🟢 Entry Point</div><div id="entry" class="val">--</div></div>
+            <div class="box"><div class="label" style="color:var(--red)">🔴 Stop Loss</div><div id="sl" class="val">--</div></div>
+            <div class="box"><div class="label" style="color:var(--blue)">🔵 Take Profit</div><div id="tp" class="val">--</div></div>
+            <div class="box"><div class="label" style="color:var(--gold)">📊 Prediction</div><div id="pred" class="val">--</div></div>
         </div>
     </div>
     <div id="tv-chart"></div>
@@ -44,7 +44,8 @@
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
         let mode = 'GOLD';
-        function setMode(m){ mode=m; 
+        function setMode(m){ 
+            mode=m; 
             document.getElementById('g-btn').className = m==='GOLD'?'s-btn active':'s-btn';
             document.getElementById('b-btn').className = m==='BTC'?'s-btn active':'s-btn';
             loadChart(); update(); 
@@ -54,7 +55,7 @@
             document.getElementById('tv-chart').innerHTML = '';
             new TradingView.widget({
                 "autosize": true,
-                "symbol": mode==='GOLD' ? "EXNESS:XAUUSD" : "EXNESS:BTCUSDT",
+                "symbol": mode==='GOLD' ? "OANDA:XAUUSD" : "BINANCE:BTCUSDT",
                 "interval": "5", "theme": "dark", "container_id": "tv-chart", "style": "1", "timezone": "Etc/UTC"
             });
         }
@@ -66,9 +67,9 @@
                 const d = await r.json();
                 let p = parseFloat(d.price);
 
-                // Exness Price Calibration
-                if(mode==='GOLD') p += 20.85; 
-                else p -= 5.50; // BTC Exness Adjustment
+                // Manual Exness Offset Adjustment
+                if(mode==='GOLD') p += 21.15; 
+                else p -= 5.80; 
 
                 document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
 
@@ -77,28 +78,28 @@
                 const change = parseFloat(sData.priceChangePercent);
                 const sBox = document.getElementById('signal');
 
-                let entry, sl, tp, pred;
-                pred = (Math.abs(change) * 1.5).toFixed(2) + "% Move";
+                let ent, sl, tp, pred;
+                pred = (Math.abs(change) * 2.1).toFixed(2) + "% Potential";
 
                 if(change > 0.08) {
                     sBox.innerText = '🚀 STRONG BUY'; sBox.className = 'sig-box buy';
-                    entry = p + (p * 0.0002); sl = entry - (mode==='GOLD' ? 4.5 : p*0.005); tp = entry + (mode==='GOLD' ? 8.5 : p*0.008);
+                    ent = p + 0.10; sl = ent - (mode==='GOLD' ? 5.2 : p*0.006); tp = ent + (mode==='GOLD' ? 9.5 : p*0.009);
                 } else if(change < -0.08) {
                     sBox.innerText = '📉 STRONG SELL'; sBox.className = 'sig-box sell';
-                    entry = p - (p * 0.0002); sl = entry + (mode==='GOLD' ? 4.5 : p*0.005); tp = entry - (mode==='GOLD' ? 8.5 : p*0.008);
+                    ent = p - 0.10; sl = ent + (mode==='GOLD' ? 5.2 : p*0.006); tp = ent - (mode==='GOLD' ? 9.5 : p*0.009);
                 } else {
                     sBox.innerText = '⏳ WAIT'; sBox.className = 'sig-box wait';
-                    entry = sl = tp = 0; pred = "Sideways";
+                    ent = sl = tp = 0; pred = "Sideways";
                 }
 
-                document.getElementById('entry').innerText = entry === 0 ? '--' : entry.toFixed(2);
+                document.getElementById('entry').innerText = ent === 0 ? '--' : ent.toFixed(2);
                 document.getElementById('sl').innerText = sl === 0 ? '--' : sl.toFixed(2);
                 document.getElementById('tp').innerText = tp === 0 ? '--' : tp.toFixed(2);
                 document.getElementById('pred').innerText = pred;
 
             } catch(e) { console.log(e); }
         }
-        loadChart(); setInterval(update, 1000); update();
+        loadChart(); setInterval(update, 2000); update();
     </script>
 </body>
 </html>
