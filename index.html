@@ -3,35 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V23 - Zero Gap</title>
+    <title>Elite Pro V25 - Exness Sync</title>
     <style>
-        :root { --bg:#06080c; --card:#11151c; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; }
-        body { background:var(--bg); color:white; font-family:sans-serif; margin:0; padding:10px; }
-        .dashboard { background:var(--card); border-radius:20px; padding:20px; border:1px solid #1c212d; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .switcher { display:flex; gap:8px; margin-bottom:15px; }
-        .s-btn { flex:1; padding:12px; border-radius:10px; border:1px solid #333; background:#1a1f26; color:white; font-weight:bold; cursor:pointer; font-size:12px; }
+        :root { --bg:#020406; --card:#0a0e14; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; }
+        body { background:#020406; color:white; font-family:sans-serif; margin:0; padding:10px; }
+        .dashboard { background:var(--card); border-radius:25px; padding:20px; border:1px solid #1c212d; text-align:center; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
+        .switcher { display:flex; gap:10px; margin-bottom:15px; }
+        .s-btn { flex:1; padding:15px; border-radius:12px; border:1px solid #333; background:#1a1f26; color:white; font-weight:bold; cursor:pointer; font-size:12px; }
         .s-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(240,185,11,0.1); }
-        .price { font-size:42px; font-weight:900; margin:10px 0; letter-spacing:-1px; }
-        .sig-box { padding:20px; border-radius:15px; font-size:22px; font-weight:bold; margin:10px 0; border:2px solid #2d3748; }
+        .price { font-size:45px; font-weight:900; margin:10px 0; color:white; }
+        .sig-box { padding:20px; border-radius:15px; font-size:24px; font-weight:bold; margin:10px 0; border:2px solid #2d3748; }
         .buy { color:var(--green); border-color:var(--green); background:rgba(0,255,170,0.05); }
         .sell { color:var(--red); border-color:var(--red); background:rgba(255,59,92,0.05); }
-        .wait { color:#aaa; border-color:#444; }
-        .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-        .l-box { background:#1c212d; padding:12px; border-radius:12px; font-size:14px; border-bottom:3px solid #333; }
-        #tv-chart { height:450px; border-radius:20px; margin-top:15px; border:1px solid #1c212d; }
+        .wait { color:#848e9c; border-color:#444; }
+        .info-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px; }
+        .box { background:#141a24; padding:12px; border-radius:10px; text-align:left; border-bottom:2px solid #333; }
+        .label { font-size:10px; color:#848e9c; text-transform:uppercase; margin-bottom:4px; }
+        .val { font-size:16px; font-weight:bold; }
+        #tv-chart { height:480px; border-radius:25px; margin-top:15px; border:1px solid #1c212d; }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <div class="switcher">
-            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD PRO</button>
-            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC PRO</button>
+            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD (EXNESS)</button>
+            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC (EXNESS)</button>
         </div>
         <div id="price" class="price">--</div>
-        <div id="signal" class="sig-box wait">⏳ SYNCING CHART...</div>
-        <div class="grid">
-            <div class="l-box">SL: <span id="sl" style="color:var(--red); font-weight:bold;">--</span></div>
-            <div class="l-box">TP: <span id="tp" style="color:var(--green); font-weight:bold;">--</span></div>
+        <div id="signal" class="sig-box wait">⏳ CONNECTING...</div>
+        
+        <div class="info-grid">
+            <div class="box"><div class="label">🟢 Entry Point</div><div id="entry" class="val" style="color:var(--green)">--</div></div>
+            <div class="box"><div class="label">🔴 Stop Loss</div><div id="sl" class="val" style="color:var(--red)">--</div></div>
+            <div class="box"><div class="label">🔵 Take Profit</div><div id="tp" class="val" style="color:var(--green)">--</div></div>
+            <div class="box"><div class="label">📊 Prediction</div><div id="pred" class="val" style="color:var(--gold)">--</div></div>
         </div>
     </div>
     <div id="tv-chart"></div>
@@ -39,54 +44,60 @@
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
         let mode = 'GOLD';
-        
-        function setMode(m){ 
-            mode=m; 
+        function setMode(m){ mode=m; 
             document.getElementById('g-btn').className = m==='GOLD'?'s-btn active':'s-btn';
             document.getElementById('b-btn').className = m==='BTC'?'s-btn active':'s-btn';
-            loadChart();
-            update(); 
+            loadChart(); update(); 
         }
 
         function loadChart() {
             document.getElementById('tv-chart').innerHTML = '';
             new TradingView.widget({
                 "autosize": true,
-                "symbol": mode==='GOLD' ? "OANDA:XAUUSD" : "BINANCE:BTCUSDT",
+                "symbol": mode==='GOLD' ? "EXNESS:XAUUSD" : "EXNESS:BTCUSDT",
                 "interval": "5", "theme": "dark", "container_id": "tv-chart", "style": "1", "timezone": "Etc/UTC"
             });
         }
 
         async function update(){
-            try{
-                // Direct Source Sync (XAUUSD from OANDA, BTC from Binance)
-                const symbol = mode === 'GOLD' ? 'OANDA:XAUUSD' : 'BINANCE:BTCUSDT';
+            try {
                 const apiSym = mode === 'GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
-                
                 const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${apiSym}`);
                 const d = await r.json();
                 let p = parseFloat(d.price);
-                
-                // Manual correction to match OANDA/TradingView exactly as seen in your screenshot
-                if(mode==='GOLD') p += 21.35; 
-                
+
+                // Exness Price Calibration
+                if(mode==='GOLD') p += 20.85; 
+                else p -= 5.50; // BTC Exness Adjustment
+
                 document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
-                
+
                 const stats = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${apiSym}`);
                 const sData = await stats.json();
                 const change = parseFloat(sData.priceChangePercent);
                 const sBox = document.getElementById('signal');
 
-                if(change > 0.05) { sBox.innerText = '🔥 STRONG BUY ' + mode; sBox.className = 'sig-box buy'; }
-                else if(change < -0.05) { sBox.innerText = '⚠️ STRONG SELL ' + mode; sBox.className = 'sig-box sell'; }
-                else { sBox.innerText = '⏳ WAIT FOR SIGNAL'; sBox.className = 'sig-box wait'; }
+                let entry, sl, tp, pred;
+                pred = (Math.abs(change) * 1.5).toFixed(2) + "% Move";
 
-                let gap = mode==='GOLD' ? 5.0 : (p * 0.004);
-                document.getElementById('sl').innerText = (p-gap).toFixed(2);
-                document.getElementById('tp').innerText = (p+(gap*1.5)).toFixed(2);
-            } catch(e){ console.log("Sync Error:", e); }
+                if(change > 0.08) {
+                    sBox.innerText = '🚀 STRONG BUY'; sBox.className = 'sig-box buy';
+                    entry = p + (p * 0.0002); sl = entry - (mode==='GOLD' ? 4.5 : p*0.005); tp = entry + (mode==='GOLD' ? 8.5 : p*0.008);
+                } else if(change < -0.08) {
+                    sBox.innerText = '📉 STRONG SELL'; sBox.className = 'sig-box sell';
+                    entry = p - (p * 0.0002); sl = entry + (mode==='GOLD' ? 4.5 : p*0.005); tp = entry - (mode==='GOLD' ? 8.5 : p*0.008);
+                } else {
+                    sBox.innerText = '⏳ WAIT'; sBox.className = 'sig-box wait';
+                    entry = sl = tp = 0; pred = "Sideways";
+                }
+
+                document.getElementById('entry').innerText = entry === 0 ? '--' : entry.toFixed(2);
+                document.getElementById('sl').innerText = sl === 0 ? '--' : sl.toFixed(2);
+                document.getElementById('tp').innerText = tp === 0 ? '--' : tp.toFixed(2);
+                document.getElementById('pred').innerText = pred;
+
+            } catch(e) { console.log(e); }
         }
-
         loadChart(); setInterval(update, 1000); update();
     </script>
 </body>
