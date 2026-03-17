@@ -3,99 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V45 - AI Advisor</title>
+    <title>Elite Pro V50 - Ultra Fast</title>
     <style>
-        :root { --bg: #0d1117; --card: #161b22; --accent: #ffcc00; --up: #00ff88; --down: #ff3333; --brd: #30363d; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
-        .terminal { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--brd); text-align: center; max-width: 450px; margin: auto; }
-        .switcher { display: flex; gap: 10px; margin-bottom: 15px; }
-        .s-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--brd); background: #21262d; color: #8b949e; font-weight: bold; cursor: pointer; }
-        .s-btn.active { border-color: var(--accent); color: var(--accent); background: #1c2128; }
-        .price-val { font-size: 50px; font-weight: 800; margin: 5px 0; letter-spacing: -1px; }
+        :root { --bg: #05070a; --card: #10141b; --accent: #f0b90b; --up: #00ff88; --down: #ff3b3b; --brd: #2b2f36; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 10px; }
+        .terminal { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--brd); max-width: 450px; margin: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .price-val { font-size: 52px; font-weight: 900; margin: 10px 0; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         
-        /* AI Advisor Box */
-        .advisor { background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 15px; margin: 15px 0; border: 1px solid var(--brd); position: relative; overflow: hidden; }
-        .advisor::before { content: ''; position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: var(--accent); }
-        .adv-status { font-size: 14px; color: #8b949e; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-        .adv-action { font-size: 22px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .advisor { background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px; margin-bottom: 15px; border-left: 4px solid var(--accent); }
+        .adv-status { font-size: 11px; color: #848e9c; text-transform: uppercase; letter-spacing: 1px; }
+        .adv-action { font-size: 20px; font-weight: 800; margin-top: 4px; }
         
-        .sig-btn { width: 100%; padding: 22px; border-radius: 15px; font-size: 24px; font-weight: 900; margin: 10px 0; border: 2px solid var(--brd); text-transform: uppercase; transition: 0.3s; }
-        .buy { color: var(--up); border-color: var(--up); background: rgba(0, 255, 136, 0.05); }
-        .sell { color: var(--down); border-color: var(--down); background: rgba(255, 51, 51, 0.05); }
-        .wait { color: #555; border-color: var(--brd); font-size: 18px; }
+        .sig-btn { width: 100%; padding: 20px; border-radius: 15px; font-size: 22px; font-weight: 900; border: none; text-transform: uppercase; transition: 0.2s; cursor: default; }
+        .buy { background: linear-gradient(135deg, #00c853, #00e676); color: #000; box-shadow: 0 5px 15px rgba(0,200,83,0.3); }
+        .sell { background: linear-gradient(135deg, #d50000, #ff1744); color: #fff; box-shadow: 0 5px 15px rgba(213,0,0,0.3); }
+        .wait { background: #1e2329; color: #5e6673; font-size: 16px; border: 1px solid var(--brd); }
 
-        .levels { display: flex; gap: 10px; margin-top: 15px; }
-        .lvl-box { flex: 1; background: #21262d; padding: 12px; border-radius: 12px; border: 1px solid var(--brd); }
-        .lvl-label { font-size: 11px; color: #8b949e; font-weight: bold; margin-bottom: 5px; }
-        .lvl-val { font-size: 16px; font-weight: bold; }
+        .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .lvl-box { background: #1e2329; padding: 12px; border-radius: 12px; border: 1px solid var(--brd); }
+        .lvl-label { font-size: 10px; color: #848e9c; font-weight: bold; margin-bottom: 5px; }
+        .lvl-val { font-size: 16px; font-weight: 700; }
         #tv_chart { height: 380px; border-radius: 20px; border: 1px solid var(--brd); margin-top: 15px; overflow: hidden; }
     </style>
 </head>
 <body>
     <div class="terminal">
-        <div class="switcher">
-            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">GOLD PRO</button>
-            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">BTC PRO</button>
-        </div>
-        <div id="price" class="price-val">--</div>
-        
+        <div id="price" class="price-val">FETCHING...</div>
         <div class="advisor">
-            <div class="adv-status">AI Entry Advisor</div>
-            <div id="adv-action" class="adv-action">⏳ ANALYZING...</div>
+            <div class="adv-status">AI Real-Time Advisor</div>
+            <div id="adv-action" class="adv-action">🔄 SYNCING...</div>
         </div>
-
-        <button id="signal" class="sig-btn wait">SEARCHING TREND...</button>
-        
+        <button id="signal" class="sig-btn wait">ANALYZING BTC TREND...</button>
         <div class="levels">
-            <div class="lvl-box"><div class="lvl-label" style="color:var(--down)">SL</div><div id="sl" class="lvl-val">--</div></div>
-            <div class="lvl-box"><div class="lvl-label" style="color:var(--up)">TP</div><div id="tp" class="lvl-val">--</div></div>
+            <div class="lvl-box"><div class="lvl-label" style="color:var(--down)">STOP LOSS</div><div id="sl" class="lvl-val">--</div></div>
+            <div class="lvl-box"><div class="lvl-label" style="color:var(--up)">TARGET</div><div id="tp" class="lvl-val">--</div></div>
         </div>
     </div>
     <div id="tv_chart"></div>
 
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        let mode = 'GOLD';
-        function setMode(m){ mode=m; document.getElementById('g-btn').className = m==='GOLD'?'s-btn active':'s-btn'; document.getElementById('b-btn').className = m==='BTC'?'s-btn active':'s-btn'; loadChart(); update(); }
+        let prevPrice = 0;
         function loadChart() {
-            document.getElementById('tv_chart').innerHTML = '';
-            new TradingView.widget({ "autosize": true, "symbol": mode==='GOLD' ? "OANDA:XAUUSD" : "BINANCE:BTCUSDT", "interval": "5", "theme": "dark", "container_id": "tv_chart", "style": "1", "hide_side_toolbar": true, "backgroundColor": "#0d1117" });
+            new TradingView.widget({ "autosize": true, "symbol": "BINANCE:BTCUSDT", "interval": "1", "theme": "dark", "container_id": "tv_chart", "style": "1", "hide_side_toolbar": true, "backgroundColor": "#05070a" });
         }
 
         async function update(){
             try {
-                const sym = mode === 'GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
-                const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}`);
+                const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT`);
                 const d = await r.json();
-                let p = parseFloat(d.lastPrice);
-                let chg = parseFloat(d.priceChangePercent);
+                let p = parseFloat(d.price) + 1.80; // MT5 Sync Offset
 
-                if(mode==='GOLD') p += 8.12; else p += 1.80;
-
-                document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+                document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2});
                 
                 const sBtn = document.getElementById('signal');
                 const adv = document.getElementById('adv-action');
-                let sl, tp;
-
-                // --- ADVANCED FILTER LOGIC ---
-                // Strong Confirmation (Only when trend is solid)
-                if(chg > 0.40) { 
-                    sBtn.innerHTML = 'STRONG BUY ' + mode; sBtn.className = 'sig-btn buy';
-                    adv.innerHTML = '✅ ENTRY NOW'; adv.style.color = '#00ff88';
-                    sl = p - (mode==='GOLD' ? 5.5 : 400); tp = p + (mode==='GOLD' ? 11 : 800);
-                } else if(chg < -0.40) {
-                    sBtn.innerHTML = 'STRONG SELL ' + mode; sBtn.className = 'sig-btn sell';
-                    adv.innerHTML = '✅ ENTRY NOW'; adv.style.color = '#ff3333';
-                    sl = p + (mode==='GOLD' ? 5.5 : 400); tp = p - (mode==='GOLD' ? 11 : 800);
-                } else {
-                    sBtn.innerHTML = 'WAITING FOR TREND...'; sBtn.className = 'sig-btn wait';
-                    adv.innerHTML = '❌ NO ENTRY'; adv.style.color = '#8b949e';
-                    sl = 0; tp = 0;
+                
+                // --- ULTRA FAST REACTION LOGIC ---
+                if (prevPrice > 0) {
+                    let diff = p - prevPrice;
+                    
+                    // Agar price pichle 2 sec se gir raha hai
+                    if (diff < -5) { 
+                        sBtn.innerHTML = '⚠️ MARKET DROPPING'; sBtn.className = 'sig-btn wait';
+                        adv.innerHTML = '❌ DO NOT BUY'; adv.style.color = '#ff3b3b';
+                    } 
+                    // Agar price pichle 2 sec se fast upar ja raha hai
+                    else if (diff > 5) {
+                        sBtn.innerHTML = '🚀 STRONG BUY'; sBtn.className = 'sig-btn buy';
+                        adv.innerHTML = '✅ ENTRY NOW'; adv.style.color = '#00ff88';
+                        document.getElementById('sl').innerText = (p - 250).toFixed(2);
+                        document.getElementById('tp').innerText = (p + 500).toFixed(2);
+                    }
                 }
-
-                document.getElementById('sl').innerText = sl === 0 ? '--' : sl.toFixed(2);
-                document.getElementById('tp').innerText = tp === 0 ? '--' : tp.toFixed(2);
+                prevPrice = p;
             } catch(e) {}
         }
         loadChart(); setInterval(update, 2000); update();
