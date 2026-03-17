@@ -3,43 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V28 - Exness Sync</title>
+    <title>Elite Pro V31 - Vantage Edition</title>
     <style>
-        :root { --bg:#05070a; --card:#0d1117; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; --blue:#3b82f6; }
-        body { background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; margin:0; padding:10px; }
-        .dashboard { background:var(--card); border-radius:25px; padding:20px; border:1px solid #21262d; text-align:center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-        .switcher { display:flex; gap:10px; margin-bottom:15px; }
-        .s-btn { flex:1; padding:15px; border-radius:12px; border:1px solid #30363d; background:#161b22; color:white; font-weight:bold; cursor:pointer; font-size:12px; }
-        .s-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(240,185,11,0.1); }
-        .price { font-size:52px; font-weight:900; margin:10px 0; letter-spacing:-1.5px; }
-        .sig-box { padding:22px; border-radius:18px; font-size:26px; font-weight:900; margin:15px 0; border:2px solid #30363d; }
-        .buy { color:var(--green); border-color:var(--green); background:rgba(0,255,170,0.05); }
-        .sell { color:var(--red); border-color:var(--red); background:rgba(255,59,92,0.05); }
-        .wait { color:#8b949e; border-color:#30363d; }
-        .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:15px; }
-        .box { background:#161b22; padding:15px; border-radius:15px; border-bottom:3px solid #30363d; text-align:left; }
-        .label { font-size:11px; color:#8b949e; margin-bottom:5px; text-transform:uppercase; font-weight:bold; }
-        .val { font-size:18px; font-weight:bold; }
-        #tv-chart { height:450px; border-radius:25px; margin-top:15px; border:1px solid #21262d; overflow:hidden; }
+        :root { 
+            --bg-main: #020617; 
+            --card-bg: #0f172a; 
+            --accent-gold: #f59e0b; 
+            --neon-green: #10b981; 
+            --neon-red: #ef4444; 
+            --text-dim: #94a3b8;
+            --border: #1e293b;
+        }
+
+        body { 
+            background: var(--bg-main); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 10px;
+        }
+
+        .terminal-container { 
+            background: var(--card-bg); 
+            border-radius: 20px; 
+            padding: 20px; 
+            border: 1px solid var(--border); 
+            text-align: center; 
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
+
+        .switcher { display: flex; gap: 8px; margin-bottom: 15px; }
+        .s-btn { 
+            flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); 
+            background: #1e293b; color: var(--text-dim); font-weight: 700; cursor: pointer; 
+            font-size: 10px; text-transform: uppercase;
+        }
+        .s-btn.active { 
+            border-color: var(--accent-gold); color: var(--accent-gold); 
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .price-display { 
+            font-size: 52px; font-weight: 800; margin: 10px 0; 
+            letter-spacing: -1.5px;
+        }
+
+        .signal-indicator { 
+            padding: 15px; border-radius: 12px; font-size: 20px; font-weight: 800; 
+            margin: 10px 0; border: 2px solid var(--border);
+        }
+        .buy { color: var(--neon-green); border-color: var(--neon-green); background: rgba(16, 185, 129, 0.1); }
+        .sell { color: var(--neon-red); border-color: var(--neon-red); background: rgba(239, 68, 68, 0.1); }
+        .wait { color: var(--text-dim); border-color: var(--border); }
+
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .meta-box { 
+            background: rgba(30, 41, 59, 0.4); padding: 12px; border-radius: 12px; 
+            border: 1px solid var(--border); text-align: left;
+        }
+        .meta-label { font-size: 9px; color: var(--text-dim); font-weight: 700; margin-bottom: 3px; }
+        .meta-val { font-size: 15px; font-weight: 700; }
+
+        #chart-area { 
+            height: 450px; border-radius: 20px; border: 1px solid var(--border); 
+            overflow: hidden; margin-top: 15px;
+        }
     </style>
 </head>
 <body>
-    <div class="dashboard">
+
+    <div class="terminal-container">
         <div class="switcher">
-            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD (EXNESS)</button>
-            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC (EXNESS)</button>
+            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 XAUUSD (VANTAGE)</button>
+            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTCUSD (VANTAGE)</button>
         </div>
-        <div id="price" class="price">--</div>
-        <div id="signal" class="sig-box wait">⏳ SYNCING...</div>
         
-        <div class="grid">
-            <div class="box"><div class="label" style="color:var(--green)">🟢 Entry Point</div><div id="entry" class="val">--</div></div>
-            <div class="box"><div class="label" style="color:var(--red)">🔴 Stop Loss</div><div id="sl" class="val">--</div></div>
-            <div class="box"><div class="label" style="color:var(--blue)">🔵 Take Profit</div><div id="tp" class="val">--</div></div>
-            <div class="box"><div class="label" style="color:var(--gold)">📊 Prediction</div><div id="pred" class="val">--</div></div>
+        <div id="price" class="price-display">--</div>
+        <div id="signal" class="signal-indicator wait">⏳ SYNCING VANTAGE...</div>
+        
+        <div class="meta-grid">
+            <div class="meta-box"><div class="meta-label" style="color:var(--neon-green)">ENTRY</div><div id="entry" class="meta-val">--</div></div>
+            <div class="meta-box"><div class="meta-label" style="color:var(--neon-red)">STOP LOSS</div><div id="sl" class="meta-val">--</div></div>
+            <div class="meta-box"><div class="meta-label" style="color:var(--accent-gold)">TARGET 1</div><div id="tp1" class="meta-val">--</div></div>
+            <div class="meta-box"><div class="meta-label" style="color:var(--accent-gold)">TARGET 2</div><div id="tp2" class="meta-val">--</div></div>
         </div>
     </div>
-    <div id="tv-chart"></div>
+
+    <div id="chart-area"></div>
 
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
@@ -52,11 +102,12 @@
         }
 
         function loadChart() {
-            document.getElementById('tv-chart').innerHTML = '';
+            document.getElementById('chart-area').innerHTML = '';
             new TradingView.widget({
                 "autosize": true,
-                "symbol": mode==='GOLD' ? "FX_IDC:XAUUSD" : "BINANCE:BTCUSDT",
-                "interval": "5", "theme": "dark", "container_id": "tv-chart", "style": "1", "timezone": "Etc/UTC", "hide_side_toolbar": true
+                "symbol": mode==='GOLD' ? "VANTAGE:XAUUSD" : "BINANCE:BTCUSDT",
+                "interval": "5", "theme": "dark", "container_id": "chart-area", 
+                "style": "1", "timezone": "Etc/UTC", "hide_side_toolbar": true, "backgroundColor": "#020617"
             });
         }
 
@@ -67,9 +118,12 @@
                 const d = await r.json();
                 let p = parseFloat(d.price);
 
-                // Precise Exness Match Offset
-                if(mode==='GOLD') p += 11.25; 
-                else p -= 5.10; 
+                // Precise Vantage Calibration
+                if(mode==='GOLD') {
+                    p += 19.48; // Vantage Gold Offset
+                } else {
+                    p -= 4.22; // Vantage BTC Offset
+                }
 
                 document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
 
@@ -78,24 +132,23 @@
                 const change = parseFloat(sData.priceChangePercent);
                 const sBox = document.getElementById('signal');
 
-                let ent, sl, tp, pred;
-                pred = (Math.abs(change) * 1.8).toFixed(2) + "% Move";
+                let ent, sl, tp1, tp2;
 
                 if(change > 0.05) {
-                    sBox.innerText = '🚀 STRONG BUY'; sBox.className = 'sig-box buy';
-                    ent = p + 0.10; sl = ent - (mode==='GOLD' ? 4.5 : p*0.005); tp = ent + (mode==='GOLD' ? 8.5 : p*0.008);
+                    sBox.innerText = '🚀 BUY SIGNAL'; sBox.className = 'signal-indicator buy';
+                    ent = p + 0.05; sl = ent - (mode==='GOLD' ? 4.2 : p*0.004); tp1 = ent + (mode==='GOLD' ? 7.5 : p*0.007); tp2 = ent + (mode==='GOLD' ? 12.0 : p*0.011);
                 } else if(change < -0.05) {
-                    sBox.innerText = '📉 STRONG SELL'; sBox.className = 'sig-box sell';
-                    ent = p - 0.10; sl = ent + (mode==='GOLD' ? 4.5 : p*0.005); tp = ent - (mode==='GOLD' ? 8.5 : p*0.008);
+                    sBox.innerText = '📉 SELL SIGNAL'; sBox.className = 'signal-indicator sell';
+                    ent = p - 0.05; sl = ent + (mode==='GOLD' ? 4.2 : p*0.004); tp1 = ent - (mode==='GOLD' ? 7.5 : p*0.007); tp2 = ent - (mode==='GOLD' ? 12.0 : p*0.011);
                 } else {
-                    sBox.innerText = '⏳ WAITING...'; sBox.className = 'sig-box wait';
-                    ent = sl = tp = 0; pred = "Sideways";
+                    sBox.innerText = '⏳ SCANNING...'; sBox.className = 'signal-indicator wait';
+                    ent = sl = tp1 = tp2 = 0;
                 }
 
                 document.getElementById('entry').innerText = ent === 0 ? '--' : ent.toFixed(2);
                 document.getElementById('sl').innerText = sl === 0 ? '--' : sl.toFixed(2);
-                document.getElementById('tp').innerText = tp === 0 ? '--' : tp.toFixed(2);
-                document.getElementById('pred').innerText = pred;
+                document.getElementById('tp1').innerText = tp1 === 0 ? '--' : tp1.toFixed(2);
+                document.getElementById('tp2').innerText = tp2 === 0 ? '--' : tp2.toFixed(2);
 
             } catch(e) { console.log(e); }
         }
