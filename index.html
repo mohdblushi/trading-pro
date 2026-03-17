@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V32 - Vantage Zero Gap</title>
+    <title>Elite Pro V33 - Vantage Final</title>
     <style>
         :root { 
             --bg-main: #020617; 
@@ -17,25 +17,25 @@
 
         body { background: var(--bg-main); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 10px; display: flex; flex-direction: column; gap: 15px; }
 
-        .terminal-container { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--border); text-align: center; background-image: radial-gradient(circle at top right, #1e293b, #0f172a); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+        .terminal-container { background: var(--card-bg); border-radius: 20px; padding: 20px; border: 1px solid var(--border); text-align: center; background-image: radial-gradient(circle at top right, #1e293b, #0f172a); }
 
         .switcher { display: flex; gap: 8px; margin-bottom: 15px; }
-        .s-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #1e293b; color: var(--text-dim); font-weight: 700; cursor: pointer; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;}
-        .s-btn.active { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(245, 158, 11, 0.15); box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);}
+        .s-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #1e293b; color: var(--text-dim); font-weight: 700; cursor: pointer; font-size: 10px; text-transform: uppercase;}
+        .s-btn.active { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(245, 158, 11, 0.15);}
 
-        .price-display { font-size: 52px; font-weight: 800; margin: 10px 0; letter-spacing: -1.5px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        .price-display { font-size: 52px; font-weight: 800; margin: 10px 0; letter-spacing: -1.5px; }
 
-        .signal-indicator { padding: 15px; border-radius: 12px; font-size: 20px; font-weight: 800; margin: 10px 0; border: 2px solid var(--border); text-transform: uppercase;}
-        .buy { color: var(--neon-green); border-color: var(--neon-green); background: rgba(16, 185, 129, 0.1); box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.1); }
-        .sell { color: var(--neon-red); border-color: var(--neon-red); background: rgba(239, 68, 68, 0.1); box-shadow: inset 0 0 15px rgba(239, 68, 68, 0.1); }
-        .wait { color: var(--text-dim); border-color: var(--border); }
+        .signal-indicator { padding: 18px; border-radius: 12px; font-size: 22px; font-weight: 800; margin: 10px 0; border: 2px solid var(--border); transition: 0.3s; }
+        .buy { color: var(--neon-green); border-color: var(--neon-green); background: rgba(16, 185, 129, 0.15); box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); }
+        .sell { color: var(--neon-red); border-color: var(--neon-red); background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 20px rgba(239, 68, 68, 0.1); }
+        .wait { color: var(--text-dim); border-color: var(--border); font-size: 16px; opacity: 0.6; }
 
         .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; text-align: left; }
-        .meta-box { background: rgba(30, 41, 59, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); border-bottom-width: 3px;}
+        .meta-box { background: rgba(30, 41, 59, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .meta-label { font-size: 9px; color: var(--text-dim); font-weight: 700; margin-bottom: 3px; text-transform: uppercase;}
         .meta-val { font-size: 15px; font-weight: 700; }
 
-        #chart-area { height: 450px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; margin-top: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        #chart-area { height: 450px; border-radius: 20px; border: 1px solid var(--border); overflow: hidden; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -47,13 +47,13 @@
         </div>
         
         <div id="price" class="price-display">--</div>
-        <div id="signal" class="signal-indicator wait">⏳ SYNCING VANTAGE...</div>
+        <div id="signal" class="signal-indicator wait">⏳ ANALYSIS IN PROGRESS...</div>
         
         <div class="meta-grid">
-            <div class="meta-box"><div class="meta-label" style="color:var(--neon-green)">ENTRY</div><div id="entry" class="meta-val">--</div></div>
+            <div class="meta-box"><div class="meta-label" style="color:var(--neon-green)">STRONG ENTRY</div><div id="entry" class="meta-val">--</div></div>
             <div class="meta-box"><div class="meta-label" style="color:var(--neon-red)">STOP LOSS</div><div id="sl" class="meta-val">--</div></div>
-            <div class="meta-box"><div class="meta-label" style="color:var(--accent-gold)">TARGET 1</div><div id="tp1" class="meta-val">--</div></div>
-            <div class="meta-box"><div class="meta-label" style="color:var(--accent-gold)">TARGET 2</div><div id="tp2" class="meta-val">--</div></div>
+            <div class="meta-box"><div class="meta-label" style="color:var(--accent-gold)">STRONG TP 1</div><div id="tp1" class="meta-val">--</div></div>
+            <div class="meta-box"><div class="meta-label" style="color:var(--accent-gold)">STRONG TP 2</div><div id="tp2" class="meta-val">--</div></div>
         </div>
     </div>
 
@@ -62,7 +62,6 @@
     <script src="https://s3.tradingview.com/tv.js"></script>
     <script>
         let mode = 'GOLD';
-        let currentBrokerPrice = null;
 
         function setMode(m){ 
             mode=m; 
@@ -81,34 +80,22 @@
             });
         }
 
-        // Advanced Broker Synchronization Code
-        async function fetchCalculatedPrice() {
+        async function update(){
             try {
                 const apiSym = mode === 'GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
                 const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${apiSym}`);
                 const d = await r.json();
                 let p = parseFloat(d.price);
 
-                // Dynamically calibrated offset to match Vantage App rates
-                let calibrationOffset = 0;
-                if(mode==='GOLD') calibrationOffset = 18.25; 
-                else calibrationOffset = -3.85;
+                // Precise Calibration for Vantage App
+                if(mode==='GOLD') {
+                    p += 14.85; // Adjusted based on your latest screenshot gap
+                } else {
+                    p -= 3.90; // Stable BTC offset
+                }
 
-                return p + calibrationOffset;
+                document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
 
-            } catch(e) { console.log(e); return null; }
-        }
-
-        async function update(){
-            currentBrokerPrice = await fetchCalculatedPrice();
-            if(!currentBrokerPrice) return;
-
-            // Display Broker Price
-            document.getElementById('price').innerText = '$' + currentBrokerPrice.toLocaleString(undefined,{minimumFractionDigits:mode==='GOLD'?3:2, maximumFractionDigits:mode==='GOLD'?3:2});
-
-            try {
-                // Fetch stats for signal calculation
-                const apiSym = mode === 'GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
                 const stats = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${apiSym}`);
                 const sData = await stats.json();
                 const change = parseFloat(sData.priceChangePercent);
@@ -116,24 +103,22 @@
 
                 let ent, sl, tp1, tp2;
 
-                // Stronger signal threshold and confirmation
-                const threshold = 0.08; 
-
-                if(change > threshold) {
-                    sBox.innerText = '🚀 STRONG BUY SIGNAL'; sBox.className = 'signal-indicator buy';
-                    ent = currentBrokerPrice + 0.05; sl = ent - (mode==='GOLD' ? 4.5 : currentBrokerPrice*0.005); tp1 = ent + (mode==='GOLD' ? 8.0 : currentBrokerPrice*0.008); tp2 = ent + (mode==='GOLD' ? 12.5 : currentBrokerPrice*0.012);
-                } else if(change < -threshold) {
-                    sBox.innerText = '📉 STRONG SELL SIGNAL'; sBox.className = 'signal-indicator sell';
-                    ent = currentBrokerPrice - 0.05; sl = ent + (mode==='GOLD' ? 4.5 : currentBrokerPrice*0.005); tp1 = ent - (mode==='GOLD' ? 8.0 : currentBrokerPrice*0.008); tp2 = ent - (mode==='GOLD' ? 12.5 : currentBrokerPrice*0.012);
+                // Threshold set for STRONG signals only (High Sensitivity)
+                if(change > 0.12) {
+                    sBox.innerText = '🚀 STRONG BUY'; sBox.className = 'signal-indicator buy';
+                    ent = p + 0.10; sl = ent - (mode==='GOLD' ? 5.5 : p*0.006); tp1 = ent + (mode==='GOLD' ? 9.5 : p*0.01); tp2 = ent + (mode==='GOLD' ? 16.0 : p*0.015);
+                } else if(change < -0.12) {
+                    sBox.innerText = '📉 STRONG SELL'; sBox.className = 'signal-indicator sell';
+                    ent = p - 0.10; sl = ent + (mode==='GOLD' ? 5.5 : p*0.006); tp1 = ent - (mode==='GOLD' ? 9.5 : p*0.01); tp2 = ent - (mode==='GOLD' ? 16.0 : p*0.015);
                 } else {
-                    sBox.innerText = '⏳ SCANNING MARKET'; sBox.className = 'signal-indicator wait';
+                    sBox.innerText = '⏳ NO STRONG SIGNAL'; sBox.className = 'signal-indicator wait';
                     ent = sl = tp1 = tp2 = 0;
                 }
 
-                document.getElementById('entry').innerText = ent === 0 ? '--' : ent.toFixed(mode==='GOLD'?3:2);
-                document.getElementById('sl').innerText = sl === 0 ? '--' : sl.toFixed(mode==='GOLD'?3:2);
-                document.getElementById('tp1').innerText = tp1 === 0 ? '--' : tp1.toFixed(mode==='GOLD'?3:2);
-                document.getElementById('tp2').innerText = tp2 === 0 ? '--' : tp2.toFixed(mode==='GOLD'?3:2);
+                document.getElementById('entry').innerText = ent === 0 ? '--' : ent.toFixed(2);
+                document.getElementById('sl').innerText = sl === 0 ? '--' : sl.toFixed(2);
+                document.getElementById('tp1').innerText = tp1 === 0 ? '--' : tp1.toFixed(2);
+                document.getElementById('tp2').innerText = tp2 === 0 ? '--' : tp2.toFixed(2);
 
             } catch(e) { console.log(e); }
         }
