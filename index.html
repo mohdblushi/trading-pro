@@ -1,75 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APEX TRADER - FIXED</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-        body { background: #010609; color: #ddeeff; font-family: sans-serif; margin: 0; padding: 15px; }
-        .card { background: #070f18; border: 1px solid #00d4ff33; border-radius: 10px; padding: 20px; margin-bottom: 15px; text-align: center; }
-        .label { font-family: 'Orbitron'; color: #00d4ff; font-size: 14px; letter-spacing: 2px; margin-bottom: 10px; }
-        .price { font-family: 'Share Tech Mono'; font-size: 42px; font-weight: bold; color: #fff; margin: 10px 0; }
-        .ratio-box { border-top: 2px solid #ffd000; }
-        .signal { font-family: 'Orbitron'; font-size: 24px; padding: 10px; margin-top: 10px; border-radius: 5px; }
-        .buy { color: #00ff9d; text-shadow: 0 0 10px #00ff9d; }
-        .sell { color: #ff2e55; text-shadow: 0 0 10px #ff2e55; }
-        .wait { color: #ff9500; }
-    </style>
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX TRADER — BTC & BTCXAU RATIO DASHBOARD</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   CSS CUSTOM PROPERTIES
+══════════════════════════════════════════ */
+:root {
+  /* Backgrounds */
+  --void:       #010507;
+  --void-2:     #03080e;
+  --card:       #060d17;
+  --card-deep:  #040a12;
+  --panel:      rgba(6,13,23,0.95);
 
-    <div class="card">
-        <div class="label">BITCOIN (BTCUSDT)</div>
-        <div id="btc-price" class="price">LOADING...</div>
-        <div id="btc-sig" class="signal wait">ANALYZING...</div>
-    </div>
+  /* BTC — Neon Cyan */
+  --btc:        #00d4ff;
+  --btc-2:      #00a8cc;
+  --btc-dim:    rgba(0,212,255,0.08);
+  --btc-glow:   rgba(0,212,255,0.30);
+  --btc-border: rgba(0,212,255,0.22);
+  --btc-border-hi: rgba(0,212,255,0.45);
 
-    <div class="card ratio-box">
-        <div class="label" style="color:#ffd000">BTCXAU RATIO (MT5 STYLE)</div>
-        <div id="ratio-val" class="price" style="font-size: 36px;">--.-----</div>
-        <div id="ratio-sig" class="signal wait">FAST MODE ACTIVE</div>
-    </div>
+  /* RATIO — Gold */
+  --gold:       #ffd000;
+  --gold-2:     #cc9f00;
+  --gold-dim:   rgba(255,208,0,0.08);
+  --gold-glow:  rgba(255,208,0,0.28);
+  --gold-border: rgba(255,208,0,0.22);
+  --gold-border-hi: rgba(255,208,0,0.45);
 
-    <script>
-        async function updateData() {
-            try {
-                // Fetch BTC and Gold from Binance
-                const [btcRes, xauRes] = await Promise.all([
-                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'),
-                    fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT') // PAXG is Gold token
-                ]);
+  /* Signals */
+  --green:      #00ff88;
+  --green-dim:  rgba(0,255,136,0.09);
+  --green-glow: rgba(0,255,136,0.40);
+  --red:        #ff2244;
+  --red-dim:    rgba(255,34,68,0.09);
+  --red-glow:   rgba(255,34,68,0.38);
+  --amber:      #ffaa00;
+  --amber-dim:  rgba(255,170,0,0.09);
 
-                const btcData = await btcRes.json();
-                const xauData = await xauRes.json();
+  /* Text */
+  --txt:        #e0eeff;
+  --txt-2:      rgba(224,238,255,0.55);
+  --txt-3:      rgba(224,238,255,0.28);
+  --txt-4:      rgba(224,238,255,0.14);
 
-                const btc = parseFloat(btcData.price);
-                const xau = parseFloat(xauData.price);
+  /* Typography */
+  --font-mono:  'Share Tech Mono', monospace;
+  --font-disp:  'Orbitron', monospace;
+  --font-body:  'Rajdhani', sans-serif;
 
-                // 1. Update BTC Price
-                document.getElementById('btc-price').innerText = btc.toFixed(1);
+  /* Sizing */
+  --radius-lg:  14px;
+  --radius-md:  10px;
+  --radius-sm:  6px;
+}
 
-                // 2. Calculate Ratio (BTC / Gold)
-                const ratio = btc / xau;
-                document.getElementById('ratio-val').innerText = ratio.toFixed(5);
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; font-size: 16px; }
 
-                // 3. Fast Signal Logic (Simple Trend)
-                const btcSig = document.getElementById('btc-sig');
-                if (btc > 74500) { // Example logic
-                    btcSig.innerText = "STRONG BUY";
-                    btcSig.className = "signal buy";
-                } else {
-                    btcSig.innerText = "WAITING";
-                    btcSig.className = "signal wait";
-                }
+body {
+  background: var(--void);
+  color: var(--txt);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.4;
+}
 
-            } catch (e) {
-                console.log("Error fetching data...");
-            }
-        }
+/* Ambient background glow */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 90% 50% at 30% -10%, rgba(0,180,255,0.055) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 40% at 80% 110%, rgba(255,208,0,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 30% at 50% 50%, rgba(0,255,136,0.015) 0%, transparent 70%);
+}
 
-        setInterval(updateData, 2000); // 2 Second Refresh
-        updateData();
-    </script>
-</body>
-</html>
+/* Scanline effect */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 2px,
+    rgba(0, 0, 0, 0.055) 2px, rgba(0, 0, 0, 0.055) 4px
+  );
+}
+
+/* ══════════════════════════════════════════
+   LAYOUT WRAPPER
+══════════════════════════════════════════ */
+.apex-wrap {
+  position: relative; z-index: 1;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 18px 20px 56px;
+}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.apex-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0,212,255,0.12);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.brand-logo {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--btc-border-hi);
+  background: var(--btc-dim);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 28px var(--btc-glow), inset 0 0 18px rgba(0,212,255,0.06);
+  animation: logoPulse 4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes logoPulse {
+  0%,100% { box-shadow: 0 0 28px var(--btc-glow), inset 0 0 18px rgba(0,212,255,0.06); }
+  50%     { box-shadow: 0 0 48px rgba(0,212,255,0.55), inset 0 0 22px rgba(0,212,255,0.12); }
+}
+.brand-logo svg { width: 22px; height: 22px; }
+
+.brand-text {}
+.brand-name {
+  font-family: var(--font-disp);
+  font-size: 20px; font-weight: 900;
+  letter-spacing: 4px;
+  color: var(--btc);
+  text-shadow: 0 0 18px var(--btc-glow);
+}
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 9px; color: var(--txt-3);
+  letter-spacing: 2px; margin-top: 3px;
+}
+
+.header-controls {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+
+/* Live pill */
+.live-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 13px; border-radius: 4px;
+  border: 1px solid rgba(0,255,136,0.28);
+  background: var(--green-dim);
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--green); letter-spacing: 1px;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: liveBlink 1.1s ease-in-out infinite;
+}
+@keyframes liveBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.1; } }
+
+/* Clock */
+.apex-clock {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--txt-2);
+  letter-spacing: 1px;
+}
+
+/* TF Selector */
+.tf-group {
+  display: flex; align-items: center; gap: 8px;
+}
+.tf-label {
+  font-family: var(--font-mono);
+  font-size: 9px; color: var(--txt-3);
+  letter-spacing: 1px;
+}
+.tf-select {
+  appearance: none; -webkit-appearance: none;
+  background: var(--card-deep);
+  border: 1px solid var(--btc-border);
+  border-radius: 7px;
+  padding: 8px 32px 8px 13px;
+  color: var(--btc);
+  font-family: var(--font-disp); font-size: 11px;
+  font-weight: 700; letter-spacing: 2px;
+  cursor: pointer; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2300d4ff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 10px) 50%;
+}
+.tf-select:focus { border-color: var(--btc); box-shadow: 0 0 14px var(--btc-glow); }
+.tf-select option { background: #0a1828; color: var(--txt); }
+
+/* ══════════════════════════════════════════
+   SETTINGS BAR
+══════════════════════════════════════════ */
+.settings-bar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: var(--card); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius-md); padding: 11px 16px;
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.settings-bar::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,208,0,0.35), transparent);
+}
+.settings-title {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--txt-3); letter-spacing: 2px;
+}
+.setting-field {
+  display: flex; align-items: center; gap: 7px;
+}
+.setting-field label {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--txt-3); letter-spacing: 1px; white-space: nowrap;
+}
+.setting-field input {
+  width: 92px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(0,212,255,0.15);
+  border-radius: 5px; padding: 6px 9px;
+  color: var(--btc);
+  font-family: var(--font-mono); font-size: 11px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.setting-field input:focus {
+  border-color: var(--btc);
+  box-shadow: 0 0 10px rgba(0,212,255,0.15);
+}
+
+/* ══════════════════════════════════════════
+   SECTION TITLES
+══════════════════════════════════════════ */
+.section-title {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 2px; font-weight: 400;
+}
+.section-title .st-bar {
+  width: 3px; height: 16px; border-radius: 2px; flex-shrink: 0;
+}
+.section-title.btc-st { color: var(--btc); }
+.section-title.btc-st .st-bar { background: var(--btc); box-shadow: 0 0 10px var(--btc-glow); }
+.section-title.gold-st { color: var(--gold); }
+.section-title.gold-st .st-bar { background: var(--gold); box-shadow: 0 0 10px var(--gold-glow); }
+.section-title.chart-st { color: var(--btc); }
+.section-title.chart-st .st-bar { background: var(--btc); box-shadow: 0 0 10px var(--btc-glow); }
+
+/* ══════════════════════════════════════════
+   BTC DASHBOARD CARD
+══════════════════════════════════════════ */
+.btc-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--btc-border);
+  background: linear-gradient(160deg, #060d17 0%, #030810 100%);
+  position: relative; overflow: hidden;
+  margin-bottom: 22px;
+  box-shadow: 0 0 50px rgba(0,212,255,0.04), inset 0 0 80px rgba(0,212,255,0.02);
+}
+.btc-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--btc), transparent);
+}
+.btc-card::after {
+  content: '';
+  position: absolute; bottom: 0; right: 0;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(0,212,255,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* BTC Top Row: Price | Vol | Signal | Risk */
+.btc-top-grid {
+  display: grid;
+  grid-template-columns: 260px 1fr 1fr 1fr;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.grid-cell {
+  padding: 20px 22px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.grid-cell:last-child { border-right: none; }
+
+/* Price cell */
+.cell-label {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--txt-3); letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.price-main {
+  font-family: var(--font-disp);
+  font-size: 38px; font-weight: 900;
+  letter-spacing: 1px; line-height: 1;
+  transition: color 0.25s, text-shadow 0.25s;
+}
+.price-main.dir-up   { color: var(--green); text-shadow: 0 0 20px var(--green-glow); }
+.price-main.dir-down { color: var(--red);   text-shadow: 0 0 20px var(--red-glow); }
+.price-main.dir-flat { color: var(--btc);   text-shadow: 0 0 16px var(--btc-glow); }
+.price-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px;
+}
+.chg-badge {
+  padding: 3px 9px; border-radius: 4px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+}
+.chg-badge.up   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,255,136,0.2); }
+.chg-badge.down { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(255,34,68,0.2); }
+.hl-text {
+  font-family: var(--font-mono); font-size: 9px; color: var(--txt-3);
+  margin-top: 5px; letter-spacing: 0.5px;
+}
+.offset-text {
+  font-family: var(--font-mono); font-size: 8px; color: var(--txt-4);
+  margin-top: 3px;
+}
+
+/* Volatility cell */
+.vol-value {
+  font-family: var(--font-disp); font-size: 24px; font-weight: 900;
+  line-height: 1; transition: color 0.3s;
+}
+.vol-bar-track {
+  height: 4px; background: rgba(255,255,255,0.06);
+  border-radius: 2px; overflow: hidden; margin: 8px 0 5px;
+}
+.vol-bar-fill {
+  height: 100%; border-radius: 2px;
+  transition: width 0.5s ease, background 0.3s;
+}
+.vol-status {
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 1px; margin-top: 4px;
+}
+.vol-threshold-txt {
+  font-family: var(--font-mono); font-size: 8px; color: var(--txt-3);
+  margin-top: 3px;
+}
+
+/* Signal cell */
+.signal-display {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; min-height: 100px;
+  border-radius: 8px;
+  transition: background 0.3s, box-shadow 0.3s;
+  padding: 12px;
+}
+.signal-display.s-waiting   { background: transparent; }
+.signal-display.s-sideways  { background: var(--amber-dim); box-shadow: inset 0 0 20px rgba(255,170,0,0.04); }
+.signal-display.s-buy       { background: var(--green-dim); box-shadow: inset 0 0 30px rgba(0,255,136,0.05); }
+.signal-display.s-strong-buy { background: rgba(0,255,136,0.08); box-shadow: 0 0 30px rgba(0,255,136,0.12), inset 0 0 30px rgba(0,255,136,0.07); }
+.signal-display.s-sell      { background: var(--red-dim); box-shadow: inset 0 0 30px rgba(255,34,68,0.05); }
+.signal-display.s-strong-sell { background: rgba(255,34,68,0.08); box-shadow: 0 0 30px rgba(255,34,68,0.12), inset 0 0 30px rgba(255,34,68,0.07); }
+
+.sig-text {
+  font-family: var(--font-disp); font-weight: 900;
+  letter-spacing: 3px; line-height: 1; text-align: center;
+  transition: all 0.25s;
+}
+.s-waiting   .sig-text { font-size: 15px; color: var(--txt-3); }
+.s-sideways  .sig-text { font-size: 13px; color: var(--amber); letter-spacing: 2px; text-shadow: 0 0 16px rgba(255,170,0,0.5); }
+.s-buy       .sig-text { font-size: 20px; color: var(--green); text-shadow: 0 0 22px var(--green-glow); animation: sigPulse 0.9s ease-in-out infinite; }
+.s-strong-buy .sig-text { font-size: 24px; color: var(--green); text-shadow: 0 0 32px var(--green), 0 0 65px var(--green-glow); animation: sigPulse 0.5s ease-in-out infinite; }
+.s-sell      .sig-text { font-size: 20px; color: var(--red); text-shadow: 0 0 22px var(--red-glow); animation: sigPulse 0.9s ease-in-out infinite; }
+.s-strong-sell .sig-text { font-size: 24px; color: var(--red); text-shadow: 0 0 32px var(--red), 0 0 65px var(--red-glow); animation: sigPulse 0.5s ease-in-out infinite; }
+@keyframes sigPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+.sig-pips { display: flex; gap: 5px; }
+.pip {
+  width: 18px; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+  transition: all 0.25s;
+}
+.pip.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.pip.red   { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+.pip.gold  { background: var(--gold);  box-shadow: 0 0 6px var(--gold); }
+
+.sig-sub {
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--txt-3); letter-spacing: 0.5px; text-align: center;
+}
+
+/* Risk cell */
+.risk-grid {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.risk-row-title {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--txt-3); letter-spacing: 1px; margin-bottom: 2px;
+}
+.risk-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border-radius: var(--radius-sm); border: 1px solid;
+}
+.risk-item.ri-entry { border-color: rgba(0,212,255,0.2); background: rgba(0,212,255,0.05); }
+.risk-item.ri-sl    { border-color: rgba(255,34,68,0.2);  background: rgba(255,34,68,0.05); }
+.risk-item.ri-tp    { border-color: rgba(0,255,136,0.2);  background: rgba(0,255,136,0.05); }
+.risk-item-label { font-family: var(--font-mono); font-size: 8px; color: var(--txt-3); letter-spacing: 1px; }
+.risk-item-value { font-family: var(--font-disp); font-size: 13px; font-weight: 700; line-height: 1; }
+.ri-entry .risk-item-value { color: var(--btc); }
+.ri-sl    .risk-item-value { color: var(--red); }
+.ri-tp    .risk-item-value { color: var(--green); }
+.rr-note { font-family: var(--font-mono); font-size: 8px; color: var(--txt-4); text-align: right; margin-top: 3px; }
+
+/* ══════════════════════════════════════════
+   CANDLE STRIP (4 candles)
+══════════════════════════════════════════ */
+.candle-strip-wrap {
+  display: flex; gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.candle-col {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 14px 10px; gap: 6px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.2s;
+}
+.candle-col:last-child { border-right: none; }
+.candle-col:hover { background: rgba(255,255,255,0.015); }
+.c-label { font-family: var(--font-mono); font-size: 8px; color: var(--txt-3); letter-spacing: 0.5px; }
+.c-box {
+  width: 100%; max-width: 80px; height: 52px;
+  border-radius: 7px; border: 1px solid;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px; transition: all 0.25s;
+}
+.c-box.c-green { border-color: rgba(0,255,136,0.40); background: rgba(0,255,136,0.04); }
+.c-box.c-red   { border-color: rgba(255,34,68,0.40);  background: rgba(255,34,68,0.04); }
+.c-box.c-flat  { border-color: rgba(255,255,255,0.08); background: transparent; }
+.c-arrow { font-size: 14px; font-weight: bold; }
+.c-box.c-green .c-arrow { color: var(--green); }
+.c-box.c-red   .c-arrow { color: var(--red); }
+.c-box.c-flat  .c-arrow { color: var(--txt-3); }
+.c-close { font-family: var(--font-mono); font-size: 9px; color: var(--txt-2); }
+.c-dir { font-family: var(--font-mono); font-size: 7px; letter-spacing: 0.5px; margin-top: 1px; }
+.c-dir.c-green { color: var(--green); }
+.c-dir.c-red   { color: var(--red); }
+.c-dir.c-flat  { color: var(--txt-3); }
+
+/* ══════════════════════════════════════════
+   RATIO SECTION — MT5 STYLE
+══════════════════════════════════════════ */
+.ratio-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--gold-border);
+  background: linear-gradient(160deg, #0c0d04 0%, #060600 100%);
+  position: relative; overflow: hidden;
+  margin-bottom: 22px;
+  box-shadow: 0 0 50px rgba(255,208,0,0.04), inset 0 0 80px rgba(255,208,0,0.02);
+}
+.ratio-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.ratio-card::after {
+  content: '';
+  position: absolute; bottom: 0; right: 0;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,208,0,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Ratio header bar */
+.ratio-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 22px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ratio-title-group {
+  display: flex; align-items: center; gap: 12px;
+}
+.ratio-icon {
+  width: 34px; height: 34px; border-radius: 7px;
+  border: 1px solid var(--gold-border-hi);
+  background: var(--gold-dim);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 0 16px var(--gold-glow);
+}
+.ratio-title {
+  font-family: var(--font-disp); font-size: 14px;
+  font-weight: 900; letter-spacing: 3px;
+  color: var(--gold); text-shadow: 0 0 14px var(--gold-glow);
+}
+.ratio-subtitle {
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--txt-3); letter-spacing: 2px; margin-top: 2px;
+}
+.ratio-formula-badge {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--txt-2); letter-spacing: 1px;
+  padding: 5px 12px; border-radius: 4px;
+  border: 1px solid rgba(255,208,0,0.18);
+  background: var(--gold-dim);
+}
+
+/* Ratio main grid */
+.ratio-main-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr 1fr 1fr;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Ratio price cell override */
+.ratio-price-main {
+  font-family: var(--font-disp);
+  font-size: 36px; font-weight: 900;
+  letter-spacing: 1px; line-height: 1;
+  transition: color 0.25s, text-shadow 0.25s;
+}
+.ratio-price-main.dir-up   { color: var(--green); text-shadow: 0 0 20px var(--green-glow); }
+.ratio-price-main.dir-down { color: var(--red);   text-shadow: 0 0 20px var(--red-glow); }
+.ratio-price-main.dir-flat { color: var(--gold);  text-shadow: 0 0 16px var(--gold-glow); }
+.ratio-unit {
+  font-family: var(--font-mono); font-size: 8px; color: var(--txt-3);
+  margin-top: 6px; letter-spacing: 1px;
+}
+.ratio-source-prices {
+  font-family: var(--font-mono); font-size: 9px; color: var(--txt-3);
+  margin-top: 5px; letter-spacing: 0.5px;
+}
+
+/* Ratio risk overrides */
+.ri-entry-gold { border-color: rgba(255,208,0,0.2) !important; background: rgba(255,208,0,0.05) !important; }
+.ri-entry-gold .risk-item-value { color: var(--gold) !important; }
+
+/* ══════════════════════════════════════════
+   TRADINGVIEW CHART SECTION
+══════════════════════════════════════════ */
+.chart-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--btc-border);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.chart-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.28);
+}
+.chart-header-left {
+  display: flex; align-items: center; 
