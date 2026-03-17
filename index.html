@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Pro AI V21</title>
+    <style>
+        :root { --bg:#06080c; --card:#11151c; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; }
+        body { background:var(--bg); color:white; font-family:sans-serif; margin:0; padding:10px; overflow-x:hidden; }
+        .dashboard { background:var(--card); border-radius:20px; padding:20px; border:1px solid #1c212d; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .switcher { display:flex; gap:8px; margin-bottom:15px; }
+        .s-btn { flex:1; padding:12px; border-radius:10px; border:1px solid #333; background:#1a1f26; color:white; font-weight:bold; cursor:pointer; font-size:12px; }
+        .s-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(240, 185, 11, 0.1); }
+        .price { font-size:42px; font-weight:900; margin:10px 0; letter-spacing:-1px; }
+        .sig-box { padding:20px; border-radius:15px; font-size:22px; font-weight:bold; margin:10px 0; border:2px solid #2d3748; transition: 0.3s; }
+        .buy { color:var(--green); border-color:var(--green); background:rgba(0,255,170,0.05); }
+        .sell { color:var(--red); border-color:var(--red); background:rgba(255,59,92,0.05); }
+        .wait { color:#aaa; border-color:#444; }
+        .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .l-box { background:#1c212d; padding:12px; border-radius:12px; font-size:14px; border-bottom:3px solid #333; }
+        #tv-chart { height:450px; border-radius:20px; margin-top:15px; border:1px solid #1c212d; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="switcher">
+            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD PRO</button>
+            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC PRO</button>
+        </div>
+        <div id="price" class="price">--</div>
+        <div id="signal" class="sig-box wait">⏳ ANALYZING...</div>
+        <div class="grid">
+            <div class="l-box">SL: <span id="sl" style="color:var(--red); font-weight:bold;">--</span></div>
+            <div class="l-box">TP: <span id="tp" style="color:var(--green); font-weight:bold;">--</span></div>
+        </div>
+    </div>
+    <div id="tv-chart"></div>
+
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    <script>
+        let mode = 'GOLD';
+        
+        function setMode(m){ 
+            mode=m; 
+            document.getElementById('g-btn').className = m==='GOLD'?'s-btn active':'s-btn';
+            document.getElementById('b-btn').className = m==='BTC'?'s-btn active':'s-btn';
+            loadChart();
+            update(); 
+        }
+
+        function loadChart() {
+            document.getElementById('tv-chart').innerHTML = '';
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": mode==='GOLD' ? "OANDA:XAUUSD" : "BINANCE:BTCUSDT",
+                "interval": "5", "theme": "dark", "container_id": "tv-chart", "style": "1"
+            });
+        }
+
+        async function getData(){
+            let symbol = mode==='GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
+            let url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=5m&limit=50`;
+            let res = await fetch(url);
+            let data = await res.json();
+            return data.map(c => parseFloat(c[4]));
+        }
+
+        function ema(data, period){
+            let k = 2/(period+1);
+            let val = data[0];
+            for(let i=1;i<data.length;i++){ val = data[i]*k + val*(1-k); }
+            return val;
+        }
+
+        function rsi(data, period=14){
+            let gains=0, losses=0;
+            for(let i=data.length-period; i < data.length; i++){
+                let diff = data[i]-data[i-1];
+                if(diff>0) gains+=diff; else losses-=diff;
+            }
+            let rs = gains/losses;
+            return 100 - (100/(1+rs));
+        }
+
+        async function update(){
+            try{
+                let prices = await getData();
+                let p = prices[prices.length-1];
+                if(mode==='GOLD') p += 9.85; // Fixing Gold Sync
+                
+                document.getElementById('price').innerText = '$'+p.toLocaleString(undefined,{minimumFractionDigits:2});
+                
+                let ema9 = ema(prices,9);
+                let ema21 = ema(prices,21);
+                let r = rsi(prices);
+                let sBox = document.getElementById('signal');
+
+                if(r < 35 && ema9 > ema21){
+                    sBox.innerText = '🔥 STRONG BUY ' + mode; sBox.className = 'sig-box buy';
+                } else if(r > 65 && ema9 < ema21){
+                    sBox.innerText = '⚠️ STRONG SELL ' + mode; sBox.className = 'sig-box sell';
+                } else{
+                    sBox.innerText = '⏳ WAIT FOR SIGNAL'; sBox.className = 'sig-box wait';
+                }
+
+                let gap = mode==='GOLD' ? 5.5 : (p * 0.006);
+                document.getElementById('sl').innerText = (p-gap).toFixed(2);
+                document.getElementById('tp').innerText = (p+(gap*2)).toFixed(2);
+            }catch(e){ console.log(e); }
+        }
+
+        loadChart(); setInterval(update,5000); update();
+    </script>
+</body>
+</html>
