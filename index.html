@@ -3,34 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V27 - Precision Suite</title>
+    <title>Elite Pro V28 - Exness Sync</title>
     <style>
         :root { --bg:#05070a; --card:#0d1117; --gold:#f0b90b; --green:#00ffaa; --red:#ff3b5c; --blue:#3b82f6; }
         body { background:var(--bg); color:white; font-family:'Segoe UI', sans-serif; margin:0; padding:10px; }
         .dashboard { background:var(--card); border-radius:25px; padding:20px; border:1px solid #21262d; text-align:center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         .switcher { display:flex; gap:10px; margin-bottom:15px; }
-        .s-btn { flex:1; padding:15px; border-radius:12px; border:1px solid #30363d; background:#161b22; color:white; font-weight:bold; cursor:pointer; font-size:12px; transition: 0.3s; }
+        .s-btn { flex:1; padding:15px; border-radius:12px; border:1px solid #30363d; background:#161b22; color:white; font-weight:bold; cursor:pointer; font-size:12px; }
         .s-btn.active { border-color:var(--gold); color:var(--gold); background:rgba(240,185,11,0.1); }
-        .price { font-size:52px; font-weight:900; margin:10px 0; letter-spacing:-1.5px; text-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        .price { font-size:52px; font-weight:900; margin:10px 0; letter-spacing:-1.5px; }
         .sig-box { padding:22px; border-radius:18px; font-size:26px; font-weight:900; margin:15px 0; border:2px solid #30363d; }
-        .buy { color:var(--green); border-color:var(--green); background:rgba(0,255,170,0.05); box-shadow: inset 0 0 20px rgba(0,255,170,0.1); }
-        .sell { color:var(--red); border-color:var(--red); background:rgba(255,59,92,0.05); box-shadow: inset 0 0 20px rgba(255,59,92,0.1); }
+        .buy { color:var(--green); border-color:var(--green); background:rgba(0,255,170,0.05); }
+        .sell { color:var(--red); border-color:var(--red); background:rgba(255,59,92,0.05); }
         .wait { color:#8b949e; border-color:#30363d; }
         .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:15px; }
         .box { background:#161b22; padding:15px; border-radius:15px; border-bottom:3px solid #30363d; text-align:left; }
         .label { font-size:11px; color:#8b949e; margin-bottom:5px; text-transform:uppercase; font-weight:bold; }
         .val { font-size:18px; font-weight:bold; }
-        #tv-chart { height:480px; border-radius:25px; margin-top:15px; border:1px solid #21262d; }
+        #tv-chart { height:450px; border-radius:25px; margin-top:15px; border:1px solid #21262d; overflow:hidden; }
     </style>
 </head>
 <body>
     <div class="dashboard">
         <div class="switcher">
-            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD EXNESS</button>
-            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC EXNESS</button>
+            <button id="g-btn" class="s-btn active" onclick="setMode('GOLD')">🔱 GOLD (EXNESS)</button>
+            <button id="b-btn" class="s-btn" onclick="setMode('BTC')">₿ BTC (EXNESS)</button>
         </div>
         <div id="price" class="price">--</div>
-        <div id="signal" class="sig-box wait">⏳ AI SYNCING...</div>
+        <div id="signal" class="sig-box wait">⏳ SYNCING...</div>
         
         <div class="grid">
             <div class="box"><div class="label" style="color:var(--green)">🟢 Entry Point</div><div id="entry" class="val">--</div></div>
@@ -55,8 +55,8 @@
             document.getElementById('tv-chart').innerHTML = '';
             new TradingView.widget({
                 "autosize": true,
-                "symbol": mode==='GOLD' ? "OANDA:XAUUSD" : "BINANCE:BTCUSDT",
-                "interval": "5", "theme": "dark", "container_id": "tv-chart", "style": "1", "timezone": "Etc/UTC"
+                "symbol": mode==='GOLD' ? "FX_IDC:XAUUSD" : "BINANCE:BTCUSDT",
+                "interval": "5", "theme": "dark", "container_id": "tv-chart", "style": "1", "timezone": "Etc/UTC", "hide_side_toolbar": true
             });
         }
 
@@ -67,8 +67,8 @@
                 const d = await r.json();
                 let p = parseFloat(d.price);
 
-                // Precise Exness Offset Based on your latest screenshots
-                if(mode==='GOLD') p += 18.55; 
+                // Precise Exness Match Offset
+                if(mode==='GOLD') p += 11.25; 
                 else p -= 5.10; 
 
                 document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
@@ -79,19 +79,17 @@
                 const sBox = document.getElementById('signal');
 
                 let ent, sl, tp, pred;
-                // AI prediction logic based on volatility
-                let moveFactor = Math.abs(change) * 2.5;
-                pred = moveFactor.toFixed(2) + "% Potential Move";
+                pred = (Math.abs(change) * 1.8).toFixed(2) + "% Move";
 
                 if(change > 0.05) {
-                    sBox.innerText = '🔥 STRONG BUY'; sBox.className = 'sig-box buy';
-                    ent = p + 0.05; sl = ent - (mode==='GOLD' ? 4.8 : p*0.005); tp = ent + (mode==='GOLD' ? 9.0 : p*0.008);
+                    sBox.innerText = '🚀 STRONG BUY'; sBox.className = 'sig-box buy';
+                    ent = p + 0.10; sl = ent - (mode==='GOLD' ? 4.5 : p*0.005); tp = ent + (mode==='GOLD' ? 8.5 : p*0.008);
                 } else if(change < -0.05) {
-                    sBox.innerText = '⚠️ STRONG SELL'; sBox.className = 'sig-box sell';
-                    ent = p - 0.05; sl = ent + (mode==='GOLD' ? 4.8 : p*0.005); tp = ent - (mode==='GOLD' ? 9.0 : p*0.008);
+                    sBox.innerText = '📉 STRONG SELL'; sBox.className = 'sig-box sell';
+                    ent = p - 0.10; sl = ent + (mode==='GOLD' ? 4.5 : p*0.005); tp = ent - (mode==='GOLD' ? 8.5 : p*0.008);
                 } else {
-                    sBox.innerText = '⏳ WAIT FOR BREAKOUT'; sBox.className = 'sig-box wait';
-                    ent = sl = tp = 0; pred = "Sideways Trend";
+                    sBox.innerText = '⏳ WAITING...'; sBox.className = 'sig-box wait';
+                    ent = sl = tp = 0; pred = "Sideways";
                 }
 
                 document.getElementById('entry').innerText = ent === 0 ? '--' : ent.toFixed(2);
