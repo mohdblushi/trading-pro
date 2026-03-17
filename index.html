@@ -3,87 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Pro V70 - Anti-Fake</title>
+    <title>Elite Pro V80 - Master AI</title>
     <style>
-        :root { --bg: #000; --card: #0d0d0d; --up: #00ff88; --down: #ff3b3b; --text: #888; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; }
-        .terminal { max-width: 420px; margin: auto; background: var(--card); border: 1px solid #222; border-radius: 25px; padding: 25px; }
-        .price { font-size: 55px; font-weight: 800; text-align: center; margin: 10px 0; }
-        .status-box { padding: 20px; border-radius: 15px; text-align: center; font-size: 24px; font-weight: 900; margin: 15px 0; border: 2px solid #222; }
-        .buy { border-color: var(--up); color: var(--up); background: rgba(0,255,136,0.05); }
-        .sell { border-color: var(--down); color: var(--down); background: rgba(255,59,59,0.05); }
-        .wait { border-color: #333; color: #555; }
-        .adv-text { font-size: 13px; color: var(--text); text-align: center; margin-bottom: 20px; line-height: 1.4; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .item { background: #151515; padding: 12px; border-radius: 12px; border: 1px solid #222; }
-        .label { font-size: 10px; color: #555; font-weight: bold; margin-bottom: 4px; }
-        .val { font-size: 16px; font-weight: bold; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .tab { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: #666; cursor: pointer; font-weight: bold; }
-        .tab.active { border-color: #ffcc00; color: #ffcc00; }
+        :root { --bg: #050505; --card: #111; --up: #00ff88; --down: #ff3b3b; --accent: #f0b90b; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 10px; }
+        .master-box { max-width: 420px; margin: auto; background: var(--card); border: 2px solid #222; border-radius: 25px; padding: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .price-label { font-size: 12px; color: #666; letter-spacing: 2px; text-transform: uppercase; }
+        .main-price { font-size: 58px; font-weight: 900; margin: 5px 0; color: #fff; }
+        
+        /* AI Logic Display */
+        .ai-status { padding: 20px; border-radius: 15px; margin: 20px 0; border: 1px solid #333; transition: 0.3s; }
+        .status-text { font-size: 28px; font-weight: 900; display: block; }
+        .status-hint { font-size: 13px; color: #888; margin-top: 8px; }
+        
+        /* Dynamic Colors */
+        .buy-zone { border-color: var(--up); background: rgba(0, 255, 136, 0.05); color: var(--up); }
+        .sell-zone { border-color: var(--down); background: rgba(255, 59, 59, 0.05); color: var(--down); }
+        .wait-zone { border-color: #444; background: #1a1a1a; color: #666; }
+
+        .levels-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .lvl-card { background: #1a1a1a; padding: 15px; border-radius: 12px; border: 1px solid #222; }
+        .lvl-title { font-size: 10px; color: #555; font-weight: bold; margin-bottom: 5px; }
+        .lvl-val { font-size: 18px; font-weight: bold; }
+        
+        .selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .s-btn { flex: 1; padding: 12px; border-radius: 10px; background: #222; border: 1px solid #333; color: #888; font-weight: bold; cursor: pointer; }
+        .s-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(240,185,11,0.1); }
     </style>
 </head>
 <body>
-    <div class="terminal">
-        <div class="tabs">
-            <button id="g-btn" class="tab active" onclick="setMode('GOLD')">GOLD</button>
-            <button id="b-btn" class="tab" onclick="setMode('BTC')">BTC</button>
+    <div class="master-box">
+        <div class="selector">
+            <button id="g-btn" class="s-btn active" onclick="setAsset('GOLD')">XAUUSD</button>
+            <button id="b-btn" class="s-btn" onclick="setAsset('BTC')">BTCUSD</button>
         </div>
-        <div id="price" class="price">--</div>
-        <div id="status" class="status-box wait">FILTERING...</div>
-        <div id="adv" class="adv-text">Analyzing market patterns to avoid fake entries. Please stay patient.</div>
-        <div class="grid">
-            <div class="item"><div class="label" style="color:var(--down)">STOP LOSS</div><div id="sl" class="val">--</div></div>
-            <div class="item"><div class="label" style="color:var(--up)">TAKE PROFIT</div><div id="tp" class="val">--</div></div>
+        <div class="price-label">Live Market Price</div>
+        <div id="price" class="main-price">0.00</div>
+        
+        <div id="ai-box" class="ai-status wait-zone">
+            <span id="ai-msg" class="status-text">ANALYZING...</span>
+            <div id="ai-hint" class="status-hint">Scanning trend confirmation. Do not trade.</div>
+        </div>
+
+        <div class="levels-grid">
+            <div class="lvl-card"><div class="lvl-title" style="color:var(--down)">PROTECT (SL)</div><div id="sl" class="lvl-val">--</div></div>
+            <div class="lvl-card"><div class="lvl-title" style="color:var(--up)">TARGET (TP)</div><div id="tp" class="lvl-val">--</div></div>
         </div>
     </div>
 
     <script>
-        let mode = 'GOLD';
-        let history = [];
+        let asset = 'GOLD';
+        let lastPrices = [];
 
-        function setMode(m){ mode=m; document.getElementById('g-btn').className = m==='GOLD'?'tab active':'tab'; document.getElementById('b-btn').className = m==='BTC'?'tab active':'tab'; update(); }
+        function setAsset(a){ asset=a; document.getElementById('g-btn').className=a==='GOLD'?'s-btn active':'s-btn'; document.getElementById('b-btn').className=a==='BTC'?'s-btn active':'s-btn'; lastPrices=[]; update(); }
 
         async function update(){
             try {
-                const sym = mode === 'GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
-                const r = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}`);
-                const d = await r.json();
-                let p = parseFloat(d.lastPrice) + (mode==='GOLD' ? 8.12 : 1.80);
-                let chg = parseFloat(d.priceChangePercent);
-
-                document.getElementById('price').innerText = '$' + p.toLocaleString(undefined,{minimumFractionDigits:2});
+                const pair = asset === 'GOLD' ? 'PAXGUSDT' : 'BTCUSDT';
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${pair}`);
+                const data = await res.json();
                 
-                history.push(p); if(history.length > 5) history.shift();
+                let currentPrice = parseFloat(data.lastPrice) + (asset==='GOLD' ? 8.12 : 1.80);
+                let change = parseFloat(data.priceChangePercent);
                 
-                // --- ANTI-FAKE LOGIC ---
-                let isRising = history.every((val, i, arr) => i === 0 || val >= arr[i-1]);
-                let isFalling = history.every((val, i, arr) => i === 0 || val <= arr[i-1]);
+                document.getElementById('price').innerText = '$' + currentPrice.toLocaleString(undefined,{minimumFractionDigits:2});
+                
+                // --- SMART TREND FILTER ---
+                lastPrices.push(currentPrice);
+                if(lastPrices.length > 6) lastPrices.shift();
 
-                const stat = document.getElementById('status');
-                const adv = document.getElementById('adv');
+                let box = document.getElementById('ai-box');
+                let msg = document.getElementById('ai-msg');
+                let hint = document.getElementById('ai-hint');
+                
+                // Trend is only strong if last 6 prices are moving in one direction
+                let strongUp = lastPrices.length >= 6 && lastPrices.every((v, i) => i === 0 || v >= lastPrices[i-1]);
+                let strongDown = lastPrices.length >= 6 && lastPrices.every((v, i) => i === 0 || v <= lastPrices[i-1]);
 
-                if(chg > 0.55 && isRising) {
-                    stat.innerText = "CONFIRMED BUY"; stat.className = "status-box buy";
-                    adv.innerText = "Trend is verified. Safe to enter Buy position.";
-                    document.getElementById('sl').innerText = (p - (mode==='GOLD' ? 6 : 500)).toFixed(2);
-                    document.getElementById('tp').innerText = (p + (mode==='GOLD' ? 12 : 1000)).toFixed(2);
+                if(change > 0.60 && strongUp) {
+                    box.className = "ai-status buy-zone";
+                    msg.innerText = "SAFE BUY ENTRY";
+                    hint.innerText = "Confirmed uptrend. Entry is safe now.";
+                    document.getElementById('sl').innerText = (currentPrice - (asset==='GOLD' ? 5 : 400)).toFixed(2);
+                    document.getElementById('tp').innerText = (currentPrice + (asset==='GOLD' ? 12 : 850)).toFixed(2);
                 } 
-                else if(chg < -0.55 && isFalling) {
-                    stat.innerText = "CONFIRMED SELL"; stat.className = "status-box sell";
-                    adv.innerText = "Down trend is verified. Safe to enter Sell position.";
-                    document.getElementById('sl').innerText = (p + (mode==='GOLD' ? 6 : 500)).toFixed(2);
-                    document.getElementById('tp').innerText = (p - (mode==='GOLD' ? 12 : 1000)).toFixed(2);
+                else if(change < -0.60 && strongDown) {
+                    box.className = "ai-status sell-zone";
+                    msg.innerText = "SAFE SELL ENTRY";
+                    hint.innerText = "Confirmed downtrend. Entry is safe now.";
+                    document.getElementById('sl').innerText = (currentPrice + (asset==='GOLD' ? 5 : 400)).toFixed(2);
+                    document.getElementById('tp').innerText = (currentPrice - (asset==='GOLD' ? 12 : 850)).toFixed(2);
                 } 
                 else {
-                    stat.innerText = "❌ NO ENTRY"; stat.className = "status-box wait";
-                    adv.innerText = "Market is giving fake signals or moving sideways. DO NOT TRADE.";
+                    box.className = "ai-status wait-zone";
+                    msg.innerText = "NO SAFE ENTRY";
+                    hint.innerText = "Fake signals detected or sideways. WAIT.";
                     document.getElementById('sl').innerText = "--";
                     document.getElementById('tp').innerText = "--";
                 }
             } catch(e) {}
         }
-        setInterval(update, 4000); update();
+        setInterval(update, 3500); update();
     </script>
 </body>
 </html>
